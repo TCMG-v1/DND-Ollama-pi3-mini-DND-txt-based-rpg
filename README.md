@@ -1,1 +1,1 @@
-# DND-Ollama-pi3-mini-DND-txt-based-rpg
+# DnD Dungeon Master- Ollama pi3:mini Rasperry pi4 8gb
