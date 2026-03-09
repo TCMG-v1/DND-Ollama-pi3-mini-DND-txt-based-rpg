@@ -879,33 +879,36 @@ def _check_location(text: str):
 # ══════════════════════════════════════════════════════════════
 
 def title_screen():
-    lines = [
-        "",
-        f"{C.GRAY}                    . · * · .  · * · . · * · .{C.RESET}",
-        f"{C.MAGENTA}    ╔══════════════════════════════════════════════════════╗{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}                                                        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ██████╗ ██╗   ██╗███╗   ██╗ ██████╗{C.RESET}         {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ██╔══██╗██║   ██║████╗  ██║██╔════╝{C.RESET}         {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ██║  ██║██║   ██║██╔██╗ ██║██║  ███╗{C.RESET}        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ██║  ██║██║   ██║██║╚██╗██║██║   ██║{C.RESET}        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝{C.RESET}        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.CYAN}    ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝{C.RESET}        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}                                                        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗{C.RESET} {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗{C.RESET}{C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝{C.RESET}{C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗{C.RESET}{C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║{C.RESET}{C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}  {C.BOLD}{C.RED}  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝{C.RESET}{C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}                                                        {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}         {C.YELLOW}✦  Powered by Ollama  ·  Local AI  ✦{C.RESET}          {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ║{C.RESET}         {C.GRAY}A/B choices · I=inventory · T=talents{C.RESET}           {C.MAGENTA}║{C.RESET}",
-        f"{C.MAGENTA}    ╚══════════════════════════════════════════════════════╝{C.RESET}",
-        f"{C.GRAY}                    . · * · .  · * · . · * · .{C.RESET}",
-        "",
-    ]
-    for line in lines:
-        print(line)
+    print()
+    print(f"{C.GRAY}             . · * · .  · * · . · * · . · * · .{C.RESET}")
+    print(f"{C.MAGENTA}  ╔══════════════════════════════════════════════════════════╗{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}                                                          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███████╗ ██████╗{C.RESET}  {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔════╝██╔═══██╗{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ██║  ██║██║   ██║██╔██╗ ██║██║  ███╗█████╗  ██║   ██║{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ██║  ██║██║   ██║██║╚██╗██║██║   ██║██╔══╝  ██║   ██║{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝███████╗╚██████╔╝{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.CYAN}  ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}                                                          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗{C.RESET}  {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.RED}      ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝{C.RESET} {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}                                                          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ╠══════════════════════════════════════════════════════════╣{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.BOLD}{C.YELLOW}  QUICK CONTROLS{C.RESET}                                          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.GREEN}  [A]{C.RESET} / {C.YELLOW}[B]{C.RESET}  Choose your path each scene                  {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.CYAN}  [I]{C.RESET}        Full inventory, stats & equipment screen     {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.MAGENTA}  [T]{C.RESET}        Talent tree — spend points, learn abilities   {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.WHITE}  [O]{C.RESET}        Other — type any free action                   {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}  {C.GRAY}  /inn  /merchant  /spells  /status  /story  /quit{C.RESET}       {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}                                                          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ║{C.RESET}        {C.YELLOW}✦  Powered by Ollama · Runs fully local  ✦{C.RESET}          {C.MAGENTA}║{C.RESET}")
+    print(f"{C.MAGENTA}  ╚══════════════════════════════════════════════════════════╝{C.RESET}")
+    print(f"{C.GRAY}             . · * · .  · * · . · * · . · * · .{C.RESET}")
+    print()
 
 # ══════════════════════════════════════════════════════════════
 #  SCENE ART — misc moments
@@ -1042,13 +1045,13 @@ SCENE_ART = {
 
 # Extended location keywords for scene detection
 SCENE_KEYWORDS = {
-    "camp":    ["make camp","set up camp","rest here","build a fire","campfire","you camp"],
-    "darkness":["pitch black","total darkness","cannot see","blind","lights go out"],
-    "portal":  ["portal","swirling vortex","magical gateway","dimensional rift"],
-    "storm":   ["storm rolls in","lightning strikes","thunder crashes","the storm"],
-    "door":    ["mysterious door","strange door","sealed door","locked door","ancient door"],
-    "town":    ["you enter the town","you arrive in","the settlement","village ahead","town gates"],
-    "ruins":   ["ancient ruins","crumbling walls","abandoned temple","overgrown stones"],
+    "camp":      ["make camp","set up camp","camp for the night","build a fire","huddle around the fire"],
+    "darkness":  ["pitch black","plunged into darkness","all goes dark","lights go out","consumed by darkness"],
+    "portal":    ["swirling portal","magical gateway","dimensional rift","step through the portal"],
+    "storm":     ["storm rolls in","lightning strikes overhead","thunder crashes","caught in a storm"],
+    "door":      ["mysterious door","strange sealed door","ancient door","the ornate door"],
+    "town":      ["you enter the town","you arrive in the town","town gates open","the village square","enter moros"],
+    "ruins":     ["ancient ruins","crumbling ruins","abandoned temple","overgrown stone ruins"],
 }
 
 def detect_scene(response: str):
@@ -1101,3 +1104,342 @@ def show_scene(scene_name: str):
 
 def show_title():
     title_screen()
+
+# ══════════════════════════════════════════════════════════════
+#  SCENE BORDERS — wraps every DM response
+# ══════════════════════════════════════════════════════════════
+
+_BORDER_STYLES = {
+    "default":  ("╔","═","╗","║","╚","╝"),
+    "dungeon":  ("┌","─","┐","│","└","┘"),
+    "magic":    ("◈","─","◈","│","◈","◈"),
+    "combat":   ("╔","▄","╗","█","╚","╝"),
+    "tavern":   ("╔","─","╗","│","╚","╝"),
+    "death":    ("█","▀","█","█","█","█"),
+}
+
+def scene_border_top(style="default", label="", color=None):
+    tl,t,tr,_,_,_ = _BORDER_STYLES.get(style, _BORDER_STYLES["default"])
+    c = color or C.MAGENTA
+    inner = W - 2
+    if label:
+        pad = (inner - len(label) - 2) // 2
+        mid = f"{t*pad} {label} {t*(inner-pad-len(label)-2)}"
+    else:
+        mid = t * inner
+    print(f"{c}{tl}{mid}{tr}{C.RESET}")
+
+def scene_border_bot(style="default", color=None):
+    _,_,_,_,bl,br = _BORDER_STYLES.get(style, _BORDER_STYLES["default"])
+    t = _BORDER_STYLES.get(style, _BORDER_STYLES["default"])[1]
+    c = color or C.MAGENTA
+    print(f"{c}{bl}{t*(W-2)}{br}{C.RESET}")
+
+def scene_border_line(text, style="default", color=None, text_color=None):
+    _,_,_,side,_,_ = _BORDER_STYLES.get(style, _BORDER_STYLES["default"])
+    c   = color or C.MAGENTA
+    tc  = text_color or C.RESET
+    inner = W - 4
+    import textwrap
+    for line in textwrap.wrap(text, inner) or [""]:
+        pad = inner - len(line)
+        print(f"{c}{side}{C.RESET} {tc}{line}{C.RESET}{' '*pad} {c}{side}{C.RESET}")
+
+# ══════════════════════════════════════════════════════════════
+#  NEW LOCATION ART
+# ══════════════════════════════════════════════════════════════
+
+def scene_city():
+    lines = [
+        r"    |_|  |_|_|  |_|  |_|_|  |_|  |_|",
+        r"    | |  | | |  | |  | | |  | |  | |",
+        r"   /|_|\/|_|_|\/|_|\/|_|_|\/|_|\/|_|\  ",
+        r"  / |_  |_____|  _| |_____| _|  |___| \ ",
+        r" /__|_|_|_|_|_|_|_|_|_|_|_|_|__|_|_|__\ ",
+        r"════════════════════════════════════════",
+        r"         🏙  THE CITY AWAITS  🏙         ",
+    ]
+    _print_art(lines, C.BLUE)
+
+def scene_mountain():
+    lines = [
+        r"              /\          /\ ",
+        r"             /  \    /\ /  \ ",
+        r"            / /\ \  /  V    \ ",
+        r"           / /  \ \/    /\   \ ",
+        r"          / /    \/\   /  \   \ ",
+        r"    _____/ /______\ \_/____\___\ _____",
+        r"   /                                   \ ",
+        r"  ⛰   TREACHEROUS MOUNTAIN PASS   ⛰   ",
+    ]
+    _print_art(lines, C.GRAY)
+
+def scene_cave():
+    lines = [
+        r"   ___________________________________________",
+        r"  /  .  '    .       '       .    '    .     \ ",
+        r" /  ,·´ `. ·,  '  .   ·, . ´  `. ·,  .   '  \ ",
+        r"|  ( DARK )   ·,·  .   (  COLD  )   ·,  .    |",
+        r"|   `·,·´  .     .  '   `·, ·´  .      .     |",
+        r"|                  🕯  drip  drip               |",
+        r" \___________________________________________/ ",
+        r"         💀  SOMETHING IS DOWN HERE  💀        ",
+    ]
+    _print_art(lines, C.GRAY)
+
+def scene_ocean():
+    lines = [
+        r"  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~",
+        r"    ~  ~~~  ~  ~~~  ~  ~~~  ~  ~~~  ~   ",
+        r" ~ ~~~  ~  ~~~  ~  ~~~  ~  ~~~  ~  ~~~ ~",
+        r"        ⛵                               ",
+        r"  ~~  ~~ ~~  ~~ ~~  ~~ ~~  ~~ ~~  ~~ ~~",
+        r" ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~ ",
+        r"  🌊  THE OPEN SEA  🌊  ENDLESS HORIZON  ",
+    ]
+    _print_art(lines, C.CYAN)
+
+def scene_marketplace():
+    lines = [
+        r"  __|__|__|__|__|__|__|__|__|__|__|__|__",
+        r" |  FRESH  | WEAPONS | MAGIC  | CLOTH  |",
+        r" |  GOODS  |   &     | ITEMS  |  &     |",
+        r" |  TODAY  | ARMOUR  |  HERE  | LEATHER|",
+        r" |_________|_________|________|________|",
+        r"    🥕  💰  ⚔  🧙  💎  🎭  🍖  🔮      ",
+        r"   🏪  BUSY MARKET — WATCH YOUR COIN  🏪 ",
+    ]
+    _print_art(lines, C.YELLOW)
+
+def scene_library():
+    lines = [
+        r"  |=====| |=====| |=====| |=====| |=====|",
+        r"  |     | |     | |     | |     | |     |",
+        r"  | 📖  | | 📜  | | 📚  | | 🗺  | | 📖  |",
+        r"  |_____| |_____| |_____| |_____| |_____|",
+        r"  |=====| |=====| |=====| |=====| |=====|",
+        r"       ___________________________________",
+        r"      |  ANCIENT LIBRARY — SEEK & FIND  |",
+        r"      |___________________________________|",
+    ]
+    _print_art(lines, C.BLUE)
+
+def scene_throne():
+    lines = [
+        r"              * * * * * * *",
+        r"             *  ___________  *",
+        r"            *  |  THRONE   |  *",
+        r"           *   |   ROOM    |   *",
+        r"               |___________|",
+        r"              /      |      \ ",
+        r"    _________/   ____|____   \_________",
+        r"   |         |  |  CROWN  |  |         |",
+        r"   |_________|  |_________|  |_________|",
+        r"  👑  POWER LIVES HERE — KNEEL OR FIGHT  👑",
+    ]
+    _print_art(lines, C.YELLOW)
+
+def scene_bard_stage():
+    lines = [
+        r"   ♪  ♫  ♪  ♫  ♪  ♫  ♪  ♫  ♪  ♫  ♪",
+        r"  ┌────────────────────────────────────┐",
+        r"  │   *         *    *         *       │",
+        r"  │      THE STAGE IS YOURS            │",
+        r"  │                   *         *      │",
+        r"  │  🎸  Strum the lute. Move their    │",
+        r"  │      hearts. Change the world.     │",
+        r"  └────────────────────────────────────┘",
+        r"   ♪  ♫  ♪  ♫  ♪  ♫  ♪  ♫  ♪  ♫  ♪",
+    ]
+    _print_art(lines, C.YELLOW)
+
+def scene_night():
+    lines = [
+        r"   *    .  *   .   *  .    *  .   *   .",
+        r"  .  *    .  *    .  *   .  *    .  *  ",
+        r"       *  .    *     .  *    .  *    .  ",
+        r"  .  *    .  *    .  🌙  .  *    .  *  ",
+        r"       *  .    *     .  *    .  *    .  ",
+        r"  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ",
+        r"  🌑  THE NIGHT HOLDS MANY SECRETS  🌑  ",
+    ]
+    _print_art(lines, C.BLUE)
+
+def scene_ambush_road():
+    lines = [
+        r"  🌲  🌲  🌲  🌲     🌲  🌲  🌲  🌲",
+        r"  |   |   |   |       |   |   |   |",
+        r"  ================================",
+        r"           THE ROAD             ",
+        r"  ================================",
+        r"  |   |   |   |  👁  |   |   |   |",
+        r"  🌲  🌲  🌲  🌲     🌲  🌲  🌲  🌲",
+        r"    ⚠  EYES WATCH FROM THE TREES  ⚠",
+    ]
+    _print_art(lines, C.ORANGE)
+
+def scene_ritual():
+    lines = [
+        r"        .  *  .  *  .  *  .  *  .",
+        r"      *   ___________________   *",
+        r"        /  * * * * * * * * *  \ ",
+        r"       /  *   RITUAL CIRCLE  *  \ ",
+        r"      |  * *   ___________  * * |",
+        r"      |  * *  | ☽  ✦  ☾ |  * * |",
+        r"      |  * *  |___________|  * * |",
+        r"       \  *               *  / ",
+        r"        \___________________/ ",
+        r"       🔮  ANCIENT POWER STIRS  🔮",
+    ]
+    _print_art(lines, C.MAGENTA)
+
+def scene_jail():
+    lines = [
+        r"  | | | | | | | | | | | | | | | |",
+        r"  | |                         | |",
+        r"  | |   ⛓  YOU ARE TRAPPED  ⛓  | |",
+        r"  | |                         | |",
+        r"  | |   Find a way out...     | |",
+        r"  | |   or rot here.          | |",
+        r"  | |                         | |",
+        r"  | | | | | | | | | | | | | | | |",
+        r"  ⛓  PRISON — ESCAPE OR BARGAIN  ⛓",
+    ]
+    _print_art(lines, C.RED)
+
+def scene_ghost():
+    lines = [
+        r"       .  *  .  *  .  *  .  *  .",
+        r"          ___",
+        r"         /   \ ",
+        r"        | o o |   * . *",
+        r"         \   /          . *",
+        r"       ~~~`-'~~~  *  .     *",
+        r"     ~~~~~~~~~~~~~~~  .  *   .",
+        r"   ~~~~~~~~~~~~~~~~~~~~~   *",
+        r"  👻  A PRESENCE LINGERS HERE  👻",
+    ]
+    _print_art(lines, C.GRAY)
+
+# ══════════════════════════════════════════════════════════════
+#  NEW ENEMY ART
+# ══════════════════════════════════════════════════════════════
+
+def enemy_cultist():
+    lines = [
+        r"       ,----.",
+        r"      / 卍  \ ",
+        r"     |  ~~~  |",
+        r"      \ --- /",
+        r"    .--'---'--.",
+        r"   /  DEVOTED  \ ",
+        r"  |   TO THE   |",
+        r"   \ OLD WAYS / ",
+        r"    '-|   |-'",
+        r"      |   |",
+        r"  👁  CULTIST  👁",
+    ]
+    _print_art(lines, C.MAGENTA)
+
+def enemy_witch():
+    lines = [
+        r"       /\ ",
+        r"      /  \ ",
+        r"     / /\ \ ",
+        r"    ,---.  ",
+        r"   / o o \ ",
+        r"  |  ---  |",
+        r"   \ ~~~ /",
+        r"  .-'---'-.",
+        r" / CURSED  \ ",
+        r"|  HEXCRAFT |",
+        r" \_________/",
+        r"  🧙  WITCH  🧙",
+    ]
+    _print_art(lines, C.GREEN)
+
+def enemy_demon():
+    lines = [
+        r"       /\ /\ ",
+        r"      /V  V\ ",
+        r"     | (X X) |",
+        r"     |  /\/  |",
+        r"      \/----\/",
+        r"    .--'----'-.",
+        r"   / HELLSPAWN \ ",
+        r"  |  UNCHAINED  |",
+        r"   \___________/",
+        r"  🔥  DEMON  🔥",
+    ]
+    _print_art(lines, C.RED)
+
+def enemy_thug():
+    lines = [
+        r"        ,----.",
+        r"       / >  < \ ",
+        r"      | (. .) |",
+        r"       \ --- /",
+        r"     .--'---'-.",
+        r"    /  HIRED   \ ",
+        r"   |    MUSCLE  |",
+        r"    \___________/",
+        r"       | | | |",
+        r"      /  | |  \ ",
+        r"  👊  STREET THUG  👊",
+    ]
+    _print_art(lines, C.ORANGE)
+
+# Add new enemies to the registry
+ENEMY_ART.update({
+    "cultist":  enemy_cultist,
+    "witch":    enemy_witch,
+    "demon":    enemy_demon,
+    "thug":     enemy_thug,
+    "elder":    enemy_thug,    # reuse for hostile npcs
+    "guard":    enemy_thug,
+})
+
+# Add new scenes to registry
+SCENE_ART.update({
+    "city":        scene_city,
+    "mountain":    scene_mountain,
+    "cave":        scene_cave,
+    "ocean":       scene_ocean,
+    "marketplace": scene_marketplace,
+    "library":     scene_library,
+    "throne":      scene_throne,
+    "bard":        scene_bard_stage,
+    "stage":       scene_bard_stage,
+    "night":       scene_night,
+    "road":        scene_ambush_road,
+    "ritual":      scene_ritual,
+    "jail":        scene_jail,
+    "prison":      scene_jail,
+    "ghost":       scene_ghost,
+    "spirit":      scene_ghost,
+})
+
+# Add new scene keywords
+SCENE_KEYWORDS.update({
+    "city":        ["you enter the city","the great city","city gates","into the capital","the metropolis"],
+    "mountain":    ["mountain pass","you climb the mountain","treacherous peaks","alpine trail","cliff face"],
+    "cave":        ["you enter the cave","deep in the cavern","the cave mouth","spelunking","cave walls drip"],
+    "ocean":       ["you board the ship","the open sea","port of","set sail","waves crash","harbor ahead"],
+    "marketplace": ["the marketplace","busy market","the bazaar","merchant stalls","you browse the wares"],
+    "library":     ["the great library","ancient archive","shelves of tomes","reading room","scroll collection"],
+    "throne":      ["the throne room","you enter the court","before the king","the royal court","crown upon"],
+    "bard":        ["you take the stage","perform for the crowd","strum your lute","the audience watches","you begin to sing"],
+    "night":       ["as night falls","under the stars","the moon hangs","midnight approaches","darkness of night"],
+    "road":        ["eyes watch from the trees","figures block the road","the road ahead narrows","an ambush"],
+    "ritual":      ["the ritual begins","ritual circle","they begin to chant","dark ceremony","summoning ritual"],
+    "jail":        ["thrown in a cell","behind bars","the prison","you are captured","locked in the dungeon"],
+    "ghost":       ["a ghost appears","spectral figure","phantom drifts","the spirit of","haunted by"],
+})
+
+# Add new enemy keywords
+ENEMY_KEYWORDS.update({
+    "cultist":  ["cultist","cult","devotee","worshipper","fanatic"],
+    "witch":    ["witch","hag","hex","coven","curse"],
+    "demon":    ["demon","devil","fiend","hellspawn","infernal"],
+    "thug":     ["thug","brute","muscle","enforcer","hired"],
+})

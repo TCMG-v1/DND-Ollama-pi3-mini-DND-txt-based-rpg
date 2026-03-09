@@ -10,6 +10,14 @@
 import random
 from typing import Dict, List, Optional, Tuple
 
+try:
+    from combat_screen import (draw_combat_screen, damage_floater,
+                                enemy_death_screen, player_death_screen,
+                                combat_intro, narration_box)
+    SCREEN_AVAILABLE = True
+except ImportError:
+    SCREEN_AVAILABLE = False
+
 # ── Colors (mirrored from solo_play) ──────────────────────────
 class C:
     RESET   = "\033[0m";  BOLD    = "\033[1m"
@@ -605,34 +613,30 @@ WEAPONS_DMG = {
 #  COMBAT ROUND MENU (FF3 style)
 # ══════════════════════════════════════════════════════════════
 
-def show_combat_header(player: dict, enemy_name: str, enemy_hp: int, enemy_max_hp: int, round_num: int):
-    """Display the combat status bar at the top of each round."""
-    divider("═", C.RED)
-    print(f"{C.BOLD}{C.RED}  ⚔  COMBAT — Round {round_num}  ⚔{C.RESET}")
-    divider("─", C.GRAY)
-
-    # Player HP bar
-    hp    = player.get("hp", 1); mhp = _simple_max_hp(player)
-    pct   = hp/mhp if mhp else 0
-    hcol  = C.GREEN if pct>0.5 else C.ORANGE if pct>0.25 else C.RED
-    hbar  = cc(hcol,"█"*int(pct*20)) + cc(C.GRAY,"░"*(20-int(pct*20)))
-    slots = player.get("spell_slots_current",0)
-    mslots= player.get("spell_slots_max",0)
-    slot_str = f"  {cc(C.MAGENTA,'◆'*slots+C.GRAY+'◇'*(mslots-slots)+C.RESET)}" if mslots>0 else ""
-
-    print(f"  {C.BOLD}{C.CYAN}{player['name']:20}{C.RESET} HP:[{hbar}]{hcol}{hp:3}/{mhp}{C.RESET}{slot_str}")
-
-    # Enemy HP bar
-    epct  = enemy_hp/enemy_max_hp if enemy_max_hp else 0
-    ecol  = C.GREEN if epct>0.5 else C.ORANGE if epct>0.25 else C.RED
-    ebar  = cc(ecol,"█"*int(epct*20)) + cc(C.GRAY,"░"*(20-int(epct*20)))
-    print(f"  {C.BOLD}{C.RED}{enemy_name:20}{C.RESET} HP:[{ebar}]{ecol}{enemy_hp:3}/{enemy_max_hp}{C.RESET}")
-
-    # Active conditions
-    conds = player.get("conditions",[])
-    if conds:
-        cprint(C.ORANGE, f"  ⚠  Your conditions: {', '.join(conds).upper()}", wrap=False)
-    divider("─", C.GRAY)
+def show_combat_header(player: dict, enemy_name: str, enemy_hp: int,
+                       enemy_max_hp: int, round_num: int,
+                       round_log: list = None, flash_msg: str = "",
+                       flash_col: str = ""):
+    """Display the cinematic combat screen."""
+    if SCREEN_AVAILABLE:
+        draw_combat_screen(player, enemy_name, enemy_hp, enemy_max_hp,
+                           round_num, round_log=round_log,
+                           flash_msg=flash_msg, flash_col=flash_col)
+    else:
+        # Fallback plain header
+        divider("═", C.RED)
+        print(f"{C.BOLD}{C.RED}  ⚔  COMBAT — Round {round_num}  ⚔{C.RESET}")
+        divider("─", C.GRAY)
+        hp = player.get("hp",1); mhp = _simple_max_hp(player)
+        pct = hp/mhp if mhp else 0
+        hcol = C.GREEN if pct>0.5 else C.ORANGE if pct>0.25 else C.RED
+        hbar = cc(hcol,"█"*int(pct*20))+cc(C.GRAY,"░"*(20-int(pct*20)))
+        print(f"  {C.BOLD}{C.CYAN}{player['name']:20}{C.RESET} HP:[{hbar}]{hcol}{hp}/{mhp}{C.RESET}")
+        epct = enemy_hp/enemy_max_hp if enemy_max_hp else 0
+        ecol = C.GREEN if epct>0.5 else C.ORANGE if epct>0.25 else C.RED
+        ebar = cc(ecol,"█"*int(epct*20))+cc(C.GRAY,"░"*(20-int(epct*20)))
+        print(f"  {C.BOLD}{C.RED}{enemy_name:20}{C.RESET} HP:[{ebar}]{ecol}{enemy_hp}/{enemy_max_hp}{C.RESET}")
+        divider("─", C.GRAY)
 
 def combat_menu(player: dict) -> dict:
     """
