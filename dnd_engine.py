@@ -2659,6 +2659,759 @@ def main():
 
 
 # ══════════════════════════════════════════════════════════════
+#  MULTIPLAYER — Async TCP Server + Client
+#  Uses dnd-context-compressor: DMPipeline, TurnCollector,
+#  WhisperChannel, PreGenerator, ContextCompressor
+# ══════════════════════════════════════════════════════════════
+
+try:
+    from dnd_compressor import (
+        DMPipeline, TurnCollector, WhisperChannel, PreGenerator,
+        ContextCompressor,
+    )
+    from dnd_compressor.pipeline import LLMConfig, RoundResult, call_ollama
+    from dnd_compressor.collector import PlayerAction, ActionType
+    from dnd_compressor.whisper import WhisperMessage
+    HAS_COMPRESSOR = True
+except ImportError:
+    HAS_COMPRESSOR = False
+
+
+# ── Protocol helpers ──────────────────────────────────────────
+
+def _encode_msg(obj: dict) -> bytes:
+    """Encode a dict as newline-delimited JSON."""
+    return (json.dumps(obj, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def _parse_action_type(text: str) -> ActionType:
+    """Infer ActionType from free-text player input."""
+    t = text.lower()
+    if any(w in t for w in ("attack", "strike", "slash", "stab", "swing", "shoot")):
+        return ActionType.ATTACK
+    if any(w in t for w in ("cast", "spell", "magic", "fireball", "heal")):
+        return ActionType.SPELL
+    if any(w in t for w in ("move", "run", "walk", "climb", "sneak", "dash")):
+        return ActionType.MOVE
+    if any(w in t for w in ("talk", "persuade", "intimidate", "bargain", "ask")):
+        return ActionType.SOCIAL
+    if any(w in t for w in ("use", "drink", "eat", "potion", "item")):
+        return ActionType.ITEM
+    if any(w in t for w in ("defend", "block", "dodge", "shield")):
+        return ActionType.DEFEND
+    if any(w in t for w in ("flee", "escape", "retreat")):
+        return ActionType.FLEE
+    if "pass" in t:
+        return ActionType.PASS
+    return ActionType.CUSTOM
+
+
+# ══════════════════════════════════════════════════════════════
+#  GameLobby — Connection & ready management
+# ══════════════════════════════════════════════════════════════
+
+class GameLobby:
+    """Manages player connections, ready state, and lobby lifecycle."""
+
+    def __init__(self, max_players: int = 5):
+        self.max_players = max_players
+        self.players: Dict[str, dict] = {}          # name -> {class, writer, ready}
+        self.started = False
+        self._start_event = asyncio.Event()
+
+    def add_player(self, name: str, char_class: str,
+                   writer: asyncio.StreamWriter) -> bool:
+        """Add player to lobby. Returns False if full or name taken."""
+        if len(self.players) >= self.max_players:
+            return False
+        if name in self.players:
+            return False
+        self.players[name] = {
+            "class": char_class,
+            "writer": writer,
+            "ready": False,
+            "connected": True,
+        }
+        log.info(f"Lobby: {name} ({char_class}) joined [{len(self.players)}/{self.max_players}]")
+        return True
+
+    def set_ready(self, name: str) -> bool:
+        """Mark player as ready. Returns True if all players are ready."""
+        if name in self.players:
+            self.players[name]["ready"] = True
+        return all(p["ready"] for p in self.players.values()) and len(self.players) >= 1
+
+    def remove_player(self, name: str):
+        self.players.pop(name, None)
+        log.info(f"Lobby: {name} left [{len(self.players)}/{self.max_players}]")
+
+    def mark_disconnected(self, name: str):
+        if name in self.players:
+            self.players[name]["connected"] = False
+
+    def get_connected_names(self) -> List[str]:
+        return [n for n, p in self.players.items() if p["connected"]]
+
+    def get_all_names(self) -> List[str]:
+        return list(self.players.keys())
+
+    def lobby_state(self, for_player: str = "") -> dict:
+        return {
+            "type": "lobby",
+            "players": [
+                {"name": n, "class": p["class"], "ready": p["ready"],
+                 "connected": p["connected"]}
+                for n, p in self.players.items()
+            ],
+            "you": for_player,
+            "slots": f"{len(self.players)}/{self.max_players}",
+        }
+
+    def start_game(self):
+        self.started = True
+        self._start_event.set()
+
+    async def wait_for_start(self):
+        await self._start_event.wait()
+
+
+# ══════════════════════════════════════════════════════════════
+#  DnDServer — Async TCP multiplayer server
+# ══════════════════════════════════════════════════════════════
+
+class DnDServer:
+    """Multiplayer D&D server using DMPipeline + TurnCollector."""
+
+    def __init__(self, host: str = "0.0.0.0", port: int = 7777,
+                 max_players: int = 5):
+        self.host = host
+        self.port = port
+        self.lobby = GameLobby(max_players=max_players)
+        self.pipeline: Optional[DMPipeline] = None
+        self.campaign: dict = {}
+        self._running = False
+        self._server: Optional[asyncio.Server] = None
+        self._readers: Dict[str, asyncio.StreamReader] = {}
+
+    # ── Broadcast / whisper callbacks for DMPipeline ──────────
+
+    async def _broadcast(self, message: dict):
+        """Send message to all connected players."""
+        data = _encode_msg(message)
+        for name in self.lobby.get_connected_names():
+            info = self.lobby.players.get(name)
+            if info and info["connected"]:
+                try:
+                    info["writer"].write(data)
+                    await info["writer"].drain()
+                except Exception:
+                    self.lobby.mark_disconnected(name)
+
+    async def _send_to(self, name: str, message: dict):
+        """Send message to a specific player."""
+        info = self.lobby.players.get(name)
+        if info and info["connected"]:
+            try:
+                info["writer"].write(_encode_msg(message))
+                await info["writer"].drain()
+            except Exception:
+                self.lobby.mark_disconnected(name)
+
+    async def _whisper_callback(self, to_player: str, message: str):
+        """Deliver a whisper from DMPipeline."""
+        await self._send_to(to_player, {
+            "type": "whisper", "from": "DM", "message": message,
+        })
+
+    # ── Client connection handler ─────────────────────────────
+
+    async def _handle_client(self, reader: asyncio.StreamReader,
+                             writer: asyncio.StreamWriter):
+        addr = writer.get_extra_info("peername")
+        log.info(f"Connection from {addr}")
+        player_name = None
+
+        try:
+            # Phase 1: Lobby — wait for join message
+            while not self.lobby.started:
+                line = await asyncio.wait_for(reader.readline(), timeout=120)
+                if not line:
+                    return
+                try:
+                    msg = json.loads(line.decode("utf-8").strip())
+                except json.JSONDecodeError:
+                    await self._send_raw(writer, {"type": "error", "message": "Invalid JSON"})
+                    continue
+
+                if msg.get("type") == "join":
+                    name = msg.get("name", "").strip()[:20]
+                    char_class = msg.get("class", "Fighter").strip()[:20]
+                    if not name:
+                        await self._send_raw(writer, {"type": "error", "message": "Name required"})
+                        continue
+                    if self.lobby.add_player(name, char_class, writer):
+                        player_name = name
+                        self._readers[name] = reader
+                        await self._send_raw(writer, {"type": "joined", "name": name})
+                        await self._broadcast(self.lobby.lobby_state())
+                    else:
+                        await self._send_raw(writer, {
+                            "type": "error",
+                            "message": "Name taken or lobby full",
+                        })
+                        continue
+
+                elif msg.get("type") == "ready" and player_name:
+                    all_ready = self.lobby.set_ready(player_name)
+                    await self._broadcast(self.lobby.lobby_state())
+                    if all_ready:
+                        self.lobby.start_game()
+
+                # Wait briefly before checking again
+                if player_name and not self.lobby.started:
+                    try:
+                        await asyncio.wait_for(self.lobby.wait_for_start(), timeout=0.5)
+                    except asyncio.TimeoutError:
+                        pass
+
+            if not player_name:
+                return
+
+            # Phase 2: Game loop — player sends actions each round
+            log.info(f"{player_name} entering game loop")
+            while self._running and self.lobby.players.get(player_name, {}).get("connected"):
+                try:
+                    line = await asyncio.wait_for(
+                        reader.readline(), timeout=CFG.turn_timeout + 10
+                    )
+                    if not line:
+                        break
+                    msg = json.loads(line.decode("utf-8").strip())
+                except (asyncio.TimeoutError, json.JSONDecodeError):
+                    continue
+                except ConnectionError:
+                    break
+
+                if msg.get("type") == "action":
+                    action = PlayerAction(
+                        player_name=player_name,
+                        player_class=self.lobby.players[player_name]["class"],
+                        action_type=_parse_action_type(msg.get("text", "pass")),
+                        action_text=msg.get("text", "I wait and observe"),
+                        target=msg.get("target", ""),
+                    )
+                    if self.pipeline and self.pipeline.collector:
+                        all_in = self.pipeline.collector.submit_action(action)
+                        # Broadcast status update
+                        status = self.pipeline.collector.get_status()
+                        await self._broadcast({
+                            "type": "status",
+                            "waiting_for": status["waiting_for"],
+                            "submitted": status["submitted"],
+                        })
+
+                elif msg.get("type") == "whisper":
+                    if self.pipeline and self.pipeline.whisper:
+                        self.pipeline.whisper.send(
+                            from_player=player_name,
+                            to_player="DM",
+                            message=msg.get("text", ""),
+                            category="secret_action",
+                        )
+                        await self._send_to(player_name, {
+                            "type": "whisper", "from": "You (secret)",
+                            "message": msg.get("text", ""),
+                        })
+
+        except (asyncio.CancelledError, ConnectionError):
+            pass
+        except Exception as e:
+            log.error(f"Client handler error ({player_name}): {e}")
+        finally:
+            if player_name:
+                self.lobby.mark_disconnected(player_name)
+                log.info(f"{player_name} disconnected")
+                await self._broadcast({
+                    "type": "status",
+                    "waiting_for": [player_name],
+                    "submitted": [],
+                    "info": f"{player_name} disconnected",
+                })
+            try:
+                writer.close()
+                await writer.wait_closed()
+            except Exception:
+                pass
+
+    async def _send_raw(self, writer: asyncio.StreamWriter, msg: dict):
+        try:
+            writer.write(_encode_msg(msg))
+            await writer.drain()
+        except Exception:
+            pass
+
+    # ── Pipeline initialization ───────────────────────────────
+
+    async def _init_pipeline(self):
+        """Initialize DMPipeline with all compressor components."""
+        ollama_base = CFG.api_base.replace("/v1", "")
+        llm_config = LLMConfig(
+            base_url=ollama_base,
+            model=CFG.model,
+            max_gen_tokens=CFG.max_tokens,
+            temperature=CFG.temperature,
+            timeout_seconds=120,
+            num_ctx=1100,
+        )
+        self.pipeline = DMPipeline(llm_config=llm_config)
+
+        # Build a multiplayer system prompt
+        player_lines = []
+        for name, info in self.lobby.players.items():
+            player_lines.append(f"  {name} ({info['class']})")
+        party_str = "\n".join(player_lines)
+
+        system_prompt = f"""You are a Dungeon Master running a multiplayer D&D adventure for {len(self.lobby.players)} players.
+
+PARTY:
+{party_str}
+
+You receive all player actions merged together for each round.
+Narrate the results for ALL players, addressing each by name.
+Keep narration under 200 words. Be vivid and dramatic.
+
+ALWAYS end with exactly:
+[A] bold group action (5 words max)
+[B] cunning alternative (5 words max)
+[O] Other
+
+RULES:
+- Address each player's action in the narration
+- Private actions marked [SECRET] should have hidden consequences only you track
+- STOP writing after [O] Other. Nothing after it."""
+
+        await self.pipeline.initialize(
+            system_prompt=system_prompt,
+            broadcast_fn=self._broadcast,
+            whisper_fn=self._whisper_callback,
+        )
+        log.info("DMPipeline initialized")
+
+    # ── Main game loop ────────────────────────────────────────
+
+    async def _game_loop(self):
+        """Main server game loop — collect actions, process rounds."""
+        await self._init_pipeline()
+
+        # Send opening scene
+        opening_actions = [
+            PlayerAction(
+                player_name="DM",
+                player_class="narrator",
+                action_type=ActionType.CUSTOM,
+                action_text="Begin a new adventure. The party meets at a crossroads tavern.",
+            )
+        ]
+        result: RoundResult = await self.pipeline.process_round(
+            opening_actions, scene_context="Session start"
+        )
+        await self._broadcast({
+            "type": "scene",
+            "narration": result.dm_narration,
+            "options": {"A": result.option_a, "B": result.option_b},
+            "round": result.round_number,
+        })
+
+        # Main round loop
+        while self._running:
+            connected = self.lobby.get_connected_names()
+            if not connected:
+                log.info("All players disconnected — stopping game loop")
+                break
+
+            # Start collecting actions
+            self.pipeline.collector.start_round(connected)
+            await self._broadcast({
+                "type": "status",
+                "waiting_for": connected,
+                "submitted": [],
+            })
+
+            # Wait for all players (with timeout)
+            actions = await self.pipeline.collector.wait_for_all()
+
+            if not actions:
+                continue
+
+            # Process the round through DMPipeline
+            try:
+                result = await self.pipeline.process_round(actions)
+            except Exception as e:
+                log.error(f"Round processing error: {e}")
+                await self._broadcast({
+                    "type": "error", "message": f"DM error: {e}"
+                })
+                continue
+
+            # Broadcast scene to all players
+            await self._broadcast({
+                "type": "scene",
+                "narration": result.dm_narration,
+                "options": {"A": result.option_a, "B": result.option_b},
+                "round": result.round_number,
+            })
+
+            # Deliver any whisper messages
+            for player_name, whisper_text in result.whisper_messages.items():
+                await self._send_to(player_name, {
+                    "type": "whisper",
+                    "from": "DM",
+                    "message": whisper_text,
+                })
+
+            # Save game state periodically
+            if result.round_number % 3 == 0:
+                self._save_game_state(result)
+
+    def _save_game_state(self, last_result: RoundResult):
+        """Save multiplayer game state using existing atomic save."""
+        state = {
+            "mode": "multiplayer",
+            "players": {
+                n: {"class": p["class"], "connected": p["connected"]}
+                for n, p in self.lobby.players.items()
+            },
+            "pipeline": self.pipeline.save_state() if self.pipeline else {},
+            "round": last_result.round_number,
+            "timestamp": datetime.now().isoformat(),
+        }
+        atomic_save("multiplayer_save.json", state)
+
+    # ── Server start / stop ───────────────────────────────────
+
+    async def start(self):
+        """Start the TCP server and game loop."""
+        self._running = True
+        self._server = await asyncio.start_server(
+            self._handle_client, self.host, self.port
+        )
+        addr = self._server.sockets[0].getsockname()
+        log.info(f"D&D Server listening on {addr[0]}:{addr[1]}")
+        print(f"\n{C.BOLD}{C.CYAN}{'═' * W}{C.RESET}")
+        print(f"{C.BOLD}{C.YELLOW}  ⚔  AI DUNGEON MASTER v5 — MULTIPLAYER SERVER  ⚔{C.RESET}")
+        print(f"{C.BOLD}{C.CYAN}{'═' * W}{C.RESET}")
+        print(f"{C.GREEN}  Listening on {C.BOLD}{addr[0]}:{addr[1]}{C.RESET}")
+        print(f"{C.GREEN}  Model: {C.BOLD}{CFG.model}{C.RESET}")
+        print(f"{C.GREEN}  Max players: {C.BOLD}{self.lobby.max_players}{C.RESET}")
+        print(f"{C.GREEN}  Turn timeout: {C.BOLD}{CFG.turn_timeout}s{C.RESET}")
+        print(f"{C.GRAY}  Waiting for players to connect...{C.RESET}\n")
+
+        # Wait for lobby
+        await self.lobby.wait_for_start()
+        log.info(f"Game starting with {len(self.lobby.players)} players")
+        await self._broadcast({
+            "type": "lobby",
+            "players": [
+                {"name": n, "class": p["class"]}
+                for n, p in self.lobby.players.items()
+            ],
+            "you": "",
+            "started": True,
+        })
+
+        # Run game loop
+        try:
+            await self._game_loop()
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._running = False
+            self._server.close()
+            await self._server.wait_closed()
+            log.info("Server shut down")
+
+    async def stop(self):
+        self._running = False
+        if self._server:
+            self._server.close()
+
+
+# ══════════════════════════════════════════════════════════════
+#  DnDClient — Async TCP client with color terminal UI
+# ══════════════════════════════════════════════════════════════
+
+class DnDClient:
+    """Multiplayer client — connects to DnDServer, renders scenes."""
+
+    def __init__(self, host: str = "localhost", port: int = 7777):
+        self.host = host
+        self.port = port
+        self.player_name = ""
+        self.player_class = ""
+        self._reader: Optional[asyncio.StreamReader] = None
+        self._writer: Optional[asyncio.StreamWriter] = None
+        self._running = False
+        self._current_round = 0
+        self._waiting_for_input = False
+        self._input_event = asyncio.Event()
+
+    # ── Display helpers (using existing engine color system) ──
+
+    def _print_banner(self):
+        print(f"\n{C.BOLD}{C.CYAN}{'═' * W}{C.RESET}")
+        print(f"{C.BOLD}{C.YELLOW}  ⚔  AI DUNGEON MASTER v5 — MULTIPLAYER  ⚔{C.RESET}")
+        print(f"{C.BOLD}{C.CYAN}{'═' * W}{C.RESET}")
+        print(f"{C.GRAY}  Connected to {self.host}:{self.port}{C.RESET}\n")
+
+    def _print_scene(self, narration: str, options: dict, round_num: int):
+        """Render DM narration using the engine's color system."""
+        print(f"\n{C.MAGENTA}{'═' * W}{C.RESET}")
+        print(f"{C.BOLD}{C.CYAN}  Round {round_num}{C.RESET}")
+        print(f"{C.MAGENTA}{'─' * W}{C.RESET}")
+        # Use dm_print-style rendering
+        for line in narration.split("\n"):
+            s = line.strip()
+            if not s:
+                print()
+                continue
+            # NPC dialogue
+            npc = RE_NPC_FMT.match(s)
+            if npc:
+                name, dialogue = npc.group(1), npc.group(2)
+                col = COMP_COLORS.get(name.lower(), C.WHITE)
+                print(f"  {C.BOLD}{col}[{name}]{C.RESET} {col}{dialogue}{C.RESET}")
+                continue
+            says = RE_SAYS_FMT.match(s)
+            if says:
+                name, verb, dialogue = says.group(1), says.group(2), says.group(3)
+                col = COMP_COLORS.get(name.lower(), C.WHITE)
+                print(f"  {C.BOLD}{col}{name}{C.RESET} {C.DIM}{verb}:{C.RESET} {col}{dialogue}{C.RESET}")
+                continue
+            # Damage
+            if RE_DAMAGE.search(s):
+                cprint(C.RED, f"  {s}")
+                continue
+            # Gold
+            if RE_GOLD.search(s):
+                cprint(C.YELLOW, f"  {s}")
+                continue
+            # Magic
+            if RE_MAGIC.search(s):
+                cprint(C.MAGENTA, f"  {s}")
+                continue
+            # Default narration
+            cprint(C.WHITE, f"  {s}")
+
+        # Auto-detect and show ASCII scene art
+        detect_and_show_scene(narration)
+
+        # Options
+        print(f"\n{C.MAGENTA}{'─' * W}{C.RESET}")
+        opt_a = options.get("A", "Press forward boldly")
+        opt_b = options.get("B", "Proceed with caution")
+        print(f"  {C.BOLD}{C.GREEN}[A]{C.RESET} {C.GREEN}{opt_a}{C.RESET}")
+        print(f"  {C.BOLD}{C.YELLOW}[B]{C.RESET} {C.YELLOW}{opt_b}{C.RESET}")
+        print(f"  {C.BOLD}{C.CYAN}[O]{C.RESET} {C.CYAN}Other (type your own action){C.RESET}")
+        print(f"  {C.BOLD}{C.GRAY}[W]{C.RESET} {C.GRAY}Whisper to DM (secret action){C.RESET}")
+        print(f"{C.MAGENTA}{'═' * W}{C.RESET}")
+
+    def _print_whisper(self, from_name: str, message: str):
+        """Render whisper in distinct style."""
+        print(f"\n  {C.BOLD}{C.MAGENTA}{'~' * 40}{C.RESET}")
+        print(f"  {C.MAGENTA}👁  Whisper from {from_name}:{C.RESET}")
+        for line in message.split("\n"):
+            print(f"  {C.DIM}{C.MAGENTA}{line.strip()}{C.RESET}")
+        print(f"  {C.BOLD}{C.MAGENTA}{'~' * 40}{C.RESET}")
+
+    def _print_lobby(self, data: dict):
+        """Render lobby state."""
+        print(f"\n{C.CYAN}{'─' * W}{C.RESET}")
+        print(f"  {C.BOLD}{C.CYAN}⚔  ADVENTURE LOBBY  ⚔{C.RESET}  {C.GRAY}[{data.get('slots', '')}]{C.RESET}")
+        for p in data.get("players", []):
+            ready_icon = f"{C.GREEN}✓" if p.get("ready") else f"{C.YELLOW}…"
+            you_tag = f" {C.BOLD}(you){C.RESET}" if p.get("name") == self.player_name else ""
+            conn = "" if p.get("connected", True) else f" {C.RED}(disconnected)"
+            print(f"  {ready_icon}{C.RESET} {C.BOLD}{p['name']}{C.RESET}"
+                  f" — {p['class']}{you_tag}{conn}{C.RESET}")
+        print(f"{C.CYAN}{'─' * W}{C.RESET}")
+        if not data.get("started"):
+            print(f"{C.GRAY}  Type 'ready' when you're set to begin.{C.RESET}")
+
+    def _print_status(self, data: dict):
+        """Render turn status."""
+        waiting = data.get("waiting_for", [])
+        submitted = data.get("submitted", [])
+        info = data.get("info", "")
+        if info:
+            print(f"  {C.GRAY}ℹ  {info}{C.RESET}")
+        if waiting:
+            names = ", ".join(waiting)
+            print(f"  {C.YELLOW}⏳ Waiting for: {names}{C.RESET}")
+        if submitted:
+            names = ", ".join(submitted)
+            print(f"  {C.GREEN}✓  Submitted: {names}{C.RESET}")
+
+    # ── Network I/O ───────────────────────────────────────────
+
+    async def _send(self, msg: dict):
+        if self._writer:
+            self._writer.write(_encode_msg(msg))
+            await self._writer.drain()
+
+    async def _receive_loop(self):
+        """Background task: read server messages and display them."""
+        while self._running and self._reader:
+            try:
+                line = await self._reader.readline()
+                if not line:
+                    print(f"\n{C.RED}  Server disconnected.{C.RESET}")
+                    self._running = False
+                    break
+                msg = json.loads(line.decode("utf-8").strip())
+            except json.JSONDecodeError:
+                continue
+            except (ConnectionError, asyncio.CancelledError):
+                break
+
+            mtype = msg.get("type")
+
+            if mtype == "lobby":
+                self._print_lobby(msg)
+            elif mtype == "joined":
+                print(f"  {C.GREEN}✓ Joined as {C.BOLD}{msg.get('name')}{C.RESET}")
+            elif mtype == "scene":
+                self._print_scene(
+                    msg.get("narration", ""),
+                    msg.get("options", {}),
+                    msg.get("round", 0),
+                )
+                self._current_round = msg.get("round", 0)
+                self._waiting_for_input = True
+                self._input_event.set()
+            elif mtype == "whisper":
+                self._print_whisper(msg.get("from", "DM"), msg.get("message", ""))
+            elif mtype == "status":
+                self._print_status(msg)
+            elif mtype == "error":
+                print(f"  {C.RED}✗ {msg.get('message', 'Unknown error')}{C.RESET}")
+
+    async def _input_loop(self):
+        """Background task: read user input and send actions."""
+        loop = asyncio.get_event_loop()
+
+        while self._running:
+            await self._input_event.wait()
+            self._input_event.clear()
+
+            if not self._running:
+                break
+
+            try:
+                prompt = f"\n{C.BOLD}{C.GREEN}  [{self.player_name}]>{C.RESET} "
+                user_input = await loop.run_in_executor(None, lambda: input(prompt))
+            except (EOFError, KeyboardInterrupt):
+                self._running = False
+                break
+
+            text = user_input.strip()
+            if not text:
+                continue
+
+            # Lobby phase: ready signal
+            if text.lower() == "ready":
+                await self._send({"type": "ready"})
+                continue
+
+            # Whisper
+            if text.lower().startswith("w ") or text.upper() == "W":
+                if text.upper() == "W":
+                    try:
+                        whisper_text = await loop.run_in_executor(
+                            None, lambda: input(f"  {C.MAGENTA}Secret action>{C.RESET} ")
+                        )
+                    except (EOFError, KeyboardInterrupt):
+                        continue
+                else:
+                    whisper_text = text[2:]
+                await self._send({"type": "whisper", "text": whisper_text.strip()})
+                continue
+
+            # Standard choices
+            if text.upper() == "A":
+                text = "I choose option A"
+            elif text.upper() == "B":
+                text = "I choose option B"
+
+            await self._send({
+                "type": "action",
+                "text": text,
+                "target": "",
+            })
+            self._waiting_for_input = False
+
+    # ── Main connect flow ─────────────────────────────────────
+
+    async def connect(self):
+        """Connect to server, join lobby, play."""
+        try:
+            self._reader, self._writer = await asyncio.open_connection(
+                self.host, self.port
+            )
+        except (ConnectionRefusedError, OSError) as e:
+            print(f"{C.RED}  Cannot connect to {self.host}:{self.port} — {e}{C.RESET}")
+            return
+
+        self._running = True
+        self._print_banner()
+
+        # Get player info
+        try:
+            name = input(f"  {C.BOLD}Character name:{C.RESET} ").strip()[:20]
+            if not name:
+                name = "Adventurer"
+            self.player_name = name
+
+            print(f"\n  {C.GRAY}Classes: Fighter, Wizard, Rogue, Cleric, Ranger,")
+            print(f"          Paladin, Barbarian, Warlock, Bard, Monk,")
+            print(f"          Druid, Sorcerer{C.RESET}")
+            char_class = input(f"  {C.BOLD}Class:{C.RESET} ").strip()[:20]
+            if not char_class:
+                char_class = "Fighter"
+            self.player_class = char_class
+        except (EOFError, KeyboardInterrupt):
+            print(f"\n{C.GRAY}  Cancelled.{C.RESET}")
+            return
+
+        # Send join
+        await self._send({
+            "type": "join", "name": self.player_name, "class": self.player_class,
+        })
+
+        # Allow input immediately for lobby phase
+        self._input_event.set()
+
+        # Run receive + input concurrently
+        recv_task = asyncio.create_task(self._receive_loop())
+        input_task = asyncio.create_task(self._input_loop())
+
+        try:
+            await asyncio.gather(recv_task, input_task)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._running = False
+            recv_task.cancel()
+            input_task.cancel()
+            if self._writer:
+                try:
+                    self._writer.close()
+                    await self._writer.wait_closed()
+                except Exception:
+                    pass
+            print(f"\n{C.GRAY}  Disconnected from server.{C.RESET}")
+
+
+# ══════════════════════════════════════════════════════════════
 #  CLI ENTRY POINT
 # ══════════════════════════════════════════════════════════════
 
@@ -2668,6 +3421,7 @@ if __name__ == "__main__":
     parser.add_argument("--client", nargs="?", const="localhost", help="Connect to server")
     parser.add_argument("--model", type=str, help="Override LLM model")
     parser.add_argument("--port", type=int, help="Override port")
+    parser.add_argument("--max-players", type=int, default=5, help="Max players (server)")
     args = parser.parse_args()
 
     if args.model:
@@ -2676,10 +3430,25 @@ if __name__ == "__main__":
         CFG.port = args.port
 
     if args.server:
-        print(f"  Server mode coming in next update. Use solo play for now.")
-        # TODO: Async server with queue + auth (Grok's assignment)
+        if not HAS_COMPRESSOR:
+            print(f"{C.RED}  Error: dnd-context-compressor not installed.{C.RESET}")
+            print(f"{C.GRAY}  Run: pip install -e /path/to/dnd-context-compressor{C.RESET}")
+            sys.exit(1)
+        server = DnDServer(
+            host=CFG.host, port=CFG.port,
+            max_players=min(args.max_players, CFG.max_players),
+        )
+        try:
+            asyncio.run(server.start())
+        except KeyboardInterrupt:
+            print(f"\n{C.GRAY}  Server shutting down. Game state saved.{C.RESET}")
     elif args.client:
-        print(f"  Client mode coming in next update. Use solo play for now.")
+        host = args.client
+        client = DnDClient(host=host, port=CFG.port)
+        try:
+            asyncio.run(client.connect())
+        except KeyboardInterrupt:
+            print(f"\n{C.GRAY}  Disconnected.{C.RESET}")
     else:
         try:
             main()
