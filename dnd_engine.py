@@ -15,7 +15,7 @@
   Created by TCMG-v1 · Co-created with Claude, Grok, Perplexity
 ================================================================
 """
-__version__ = "5.0.0-pi4"
+__version__ = "5.1.0-pi4"
 
 import json, os, sys, random, textwrap, re, time, tempfile, shutil
 import asyncio, socket, signal, hashlib, argparse, logging
@@ -362,6 +362,102 @@ ENEMY_PORTRAITS = {
         "     \\___/          ",
         "      |||           ",
     ],
+    "Vampire": [
+        "      .===.         ",
+        "     / ^ ^ \\        ",
+        "    |  (v)  |       ",
+        "    | \\VVV/ |       ",
+        "     \\     /        ",
+        "   .-'-^^^-'-.      ",
+        "  /   BLOOD   \\     ",
+        " |  ETERNAL   |     ",
+        "  \\  NIGHT   /      ",
+        " 🦇 VAMPIRE 🦇     ",
+    ],
+    "Wraith": [
+        "      ~~~~~         ",
+        "    ~/     \\~       ",
+        "   /  O   O  \\      ",
+        "  |  ~~~~~~   |     ",
+        "   \\  oooo  /       ",
+        "    ~|     |~       ",
+        "   ~ |     | ~      ",
+        "  ~  |     |  ~     ",
+        "     ~~~~~~~        ",
+        "  👻  WRAITH  👻    ",
+    ],
+    "Mimic": [
+        "   .-----------.    ",
+        "  /    CHEST?   \\   ",
+        " |  [XXXXXXXXX]  |  ",
+        " |  [XXXXXXXXX]  |  ",
+        " |  .--^  ^--.   |  ",
+        " | / (o)  (o) \\  |  ",
+        " ||   ~~~~~~   | |  ",
+        " | \\  CHOMP!  /  |  ",
+        " |  '--------'   |  ",
+        "  📦  MIMIC!  📦    ",
+    ],
+    "Owlbear": [
+        "     /\\_/\\          ",
+        "   =(o v o)=        ",
+        "    ) ___ (         ",
+        "   / /   \\ \\        ",
+        "  | |ROAR!| |       ",
+        "  | |     | |       ",
+        "   \\ \\___/ /        ",
+        "    \\_____/         ",
+        "    /|   |\\         ",
+        "  🦉 OWLBEAR 🐻     ",
+    ],
+    "Gelatinous Cube": [
+        "   .-----------.    ",
+        "  /  .  .   .   \\   ",
+        " |   .  💀  .    |  ",
+        " | .   .  .   .  |  ",
+        " |  .  ⚔  .  .   |  ",
+        " |   .   .  .    |  ",
+        " | .  .   .  .   |  ",
+        " |  .   . 🦴 .   |  ",
+        "  \\ .   .   .  /    ",
+        "  🟢  GEL. CUBE  🟢 ",
+    ],
+    "Demon": [
+        "    /\\     /\\       ",
+        "   /  \\   /  \\      ",
+        "  | (●) (●) |      ",
+        "  |  \\  ^  /  |     ",
+        "   \\  VVVVV  /      ",
+        "    '-.___.─'       ",
+        "   /|  ✦✦  |\\      ",
+        "  / |FIEND | \\     ",
+        " |  |______|  |    ",
+        " 😈  DEMON  😈     ",
+    ],
+    "Elemental": [
+        "     ~ /\\ ~         ",
+        "   ~ / ~~ \\ ~       ",
+        "  ~ | (oo) | ~      ",
+        "  ~/|  ~~  |\\~      ",
+        " ~/ | FIRE | \\~     ",
+        " ~  | WIND |  ~     ",
+        "  ~ | EARTH| ~      ",
+        "   ~| WATER|~       ",
+        "    ~~~~~~~         ",
+        "  ⚡ ELEMENTAL ⚡    ",
+    ],
+    "Hydra": [
+        "  /\\ /\\ /\\          ",
+        " /oo/oo/oo\\         ",
+        " \\VV\\VV\\VV/         ",
+        "   \\ | | /          ",
+        "    \\|  |/          ",
+        "     | ||           ",
+        "    /    \\          ",
+        "   / HYDRA \\        ",
+        "  |________|        ",
+        "  🐍 3 HEADS 🐍     ",
+    ],
 }
 
 # ── Scene Art ────────────────────────────────────────────────
@@ -408,6 +504,67 @@ SCENE_ART = {
         "  \\                               /    ",
         "   \\_____________________________/     ",
     ],
+    "temple": [
+        "           ⛪                           ",
+        "         /|  |\\                         ",
+        "        / | ✦| \\                        ",
+        "       /  |__|  \\                       ",
+        "      / __|  |__ \\                      ",
+        "     |  |  ||  |  |                     ",
+        "     |  | 🕯️ |  |                     ",
+        "     |__|__||__|__|                     ",
+        "     ANCIENT TEMPLE                    ",
+    ],
+    "swamp": [
+        "  ~~ 🌿 ~~  🌿  ~~ 🌿 ~~               ",
+        "     ~~~ 🐊  ~~~  ~~~                   ",
+        "  🌿  ~~~  /\\.  ~~~  🌿                 ",
+        "    ~~~ . /  \\ . ~~~                    ",
+        "  🌫️  ~~|path|~~ 🌫️                     ",
+        "    ~~~ .\\  /. ~~~                      ",
+        "  🌿  ~~~ \\/  ~~~  🌿                   ",
+        "     ~~~ MURKY ~~~ SWAMP               ",
+    ],
+    "graveyard": [
+        "  🌙                                    ",
+        "     ✝  ✝   ✝  ✝   ✝                  ",
+        "    /|  |\\  /| |\\  /|                   ",
+        "   | R | | I | | P |                    ",
+        "   |___|/  |__|/  |_|                    ",
+        "    ~~  .  ~~ .  ~~                     ",
+        "  💀 GRAVEYARD 💀                       ",
+        "   fog rolls between the stones...      ",
+    ],
+    "castle": [
+        "     🏰          🏰                     ",
+        "    /|  |\\------/|  |\\                  ",
+        "   / |  | \\    / |  | \\                 ",
+        "  |  |==|  |  |  |==|  |                ",
+        "  |  |  |  |  |  |  |  |                ",
+        "  |__|__|__|__|__|__|__|                ",
+        "     |    GATE    |                     ",
+        "     |  ⚔  👑  ⚔  |                     ",
+    ],
+    "marketplace": [
+        "  ┌─────┐  ┌─────┐  ┌─────┐            ",
+        "  │HERBS│  │ARMOR│  │ GEMS│            ",
+        "  │ 🌿  │  │ 🛡️  │  │ 💎  │            ",
+        "  └──┬──┘  └──┬──┘  └──┬──┘            ",
+        "     │        │        │                ",
+        "  ~~~|~~~ MARKET ~~~|~~~                ",
+        "    🧙  👩‍🌾  🧝  🗡️  📿                  ",
+        "      busy chatter fills the air        ",
+    ],
+    "battlefield": [
+        "   ⚔  ⚔  ⚔  ⚔  ⚔  ⚔                  ",
+        "  /  SCORCHED  EARTH  \\                 ",
+        " |  🔥  💀  ⚔  🔥  💀 |                ",
+        " | broken shields litter  |             ",
+        " |  the blood-soaked ground|             ",
+        "  \\ 💀  🔥  💀  ⚔  🔥 /                ",
+        "   \\  crows circle above /               ",
+        "    \\____BATTLEFIELD____/                 ",
+    ],
 }
 
 def show_scene(name: str):
@@ -419,10 +576,16 @@ def detect_and_show_scene(text: str):
     """Auto-detect scene keywords and display art."""
     t = text.lower()
     triggers = {
-        "tavern": ["tavern", "inn", "bar", "innkeeper", "drink"],
-        "forest": ["forest", "woods", "trees", "path through"],
-        "dungeon": ["dungeon", "labyrinth", "maze", "underground"],
-        "cave": ["cave", "cavern", "grotto", "underground"],
+        "tavern": ["tavern", "inn", "bar", "innkeeper", "drink", "ale"],
+        "forest": ["forest", "woods", "trees", "path through", "woodland"],
+        "dungeon": ["dungeon", "labyrinth", "maze"],
+        "cave": ["cave", "cavern", "grotto"],
+        "temple": ["temple", "shrine", "altar", "chapel", "cathedral", "holy place"],
+        "swamp": ["swamp", "marsh", "bog", "mire", "wetland", "murky"],
+        "graveyard": ["graveyard", "cemetery", "tomb", "crypt", "burial", "gravestone"],
+        "castle": ["castle", "fortress", "keep", "stronghold", "citadel", "throne"],
+        "marketplace": ["market", "bazaar", "shop", "stall", "vendor", "trade district"],
+        "battlefield": ["battlefield", "warzone", "scorched", "fallen soldiers", "aftermath"],
     }
     for scene, keywords in triggers.items():
         if any(k in t for k in keywords):
@@ -1200,6 +1363,478 @@ def save_campaign(state: dict):
 
 
 # ══════════════════════════════════════════════════════════════
+#  ENCOUNTER TABLE — CR-scaled enemies with loot tiers
+# ══════════════════════════════════════════════════════════════
+
+ENCOUNTER_TABLE = {
+    # CR tier -> list of (name, base_hp, base_ac, xp, loot_tier)
+    "minion": [
+        ("Goblin Scout",     12, 11, 100, "common"),
+        ("Giant Rat",        10, 10, 50,  "junk"),
+        ("Kobold",           12, 11, 75,  "common"),
+        ("Skeleton",         14, 12, 100, "common"),
+        ("Zombie",           18, 8,  100, "junk"),
+    ],
+    "standard": [
+        ("Bandit",           22, 13, 200, "common"),
+        ("Orc Raider",       26, 13, 250, "common"),
+        ("Wolf Pack Leader", 20, 13, 200, "common"),
+        ("Cultist",          24, 12, 200, "uncommon"),
+        ("Giant Spider",     20, 14, 250, "uncommon"),
+        ("Wraith",           22, 13, 300, "uncommon"),
+    ],
+    "elite": [
+        ("Owlbear",          40, 14, 450, "uncommon"),
+        ("Cave Troll",       45, 14, 500, "uncommon"),
+        ("Vampire Spawn",    38, 15, 500, "rare"),
+        ("Mimic",            30, 15, 400, "rare"),
+        ("Gelatinous Cube",  35, 8,  400, "rare"),
+    ],
+    "boss": [
+        ("Demon",            55, 16, 800,  "rare"),
+        ("Hydra",            60, 15, 900,  "rare"),
+        ("Elemental Lord",   50, 16, 750,  "rare"),
+        ("Mind Flayer",      55, 17, 1000, "epic"),
+        ("Vampire Lord",     65, 16, 1100, "epic"),
+    ],
+    "legendary": [
+        ("Ancient Dragon",   120, 18, 2500, "legendary"),
+        ("Lich King",        90,  17, 2000, "legendary"),
+        ("Beholder",         80,  17, 1800, "epic"),
+        ("Demon Prince",     100, 18, 2200, "legendary"),
+    ],
+}
+
+LOOT_TABLES = {
+    "junk":      ["Rat Tail", "Broken Tooth", "Moldy Bread", "Rusty Nail"],
+    "common":    ["Health Potion", "Bandage Kit", "Adventurer's Ration", "Torch x5",
+                  "Antidote", "Thieves' Tools", "Rope (50ft)"],
+    "uncommon":  ["Health Potion", "Greater Health Potion", "Scroll of Identify",
+                  "Silver Arrow x10", "Potion of Strength", "Smoke Bomb x3"],
+    "rare":      ["Greater Health Potion", "Potion of Invisibility", "Scroll of Fireball",
+                  "Ring of Protection", "Cloak of Elvenkind", "Gem (50gp)"],
+    "epic":      ["Supreme Health Potion", "Potion of Speed", "Scroll of Teleport",
+                  "Amulet of Health", "Gem (200gp)"],
+    "legendary": ["Potion of Invulnerability", "Scroll of Wish", "Dragon Scale Mail",
+                  "Gem (500gp)", "Tome of Knowledge"],
+}
+
+def scale_encounter(player_level: int, difficulty: str) -> tuple:
+    """Pick a CR-appropriate encounter based on player level + difficulty."""
+    diff_bump = {"easy": -1, "normal": 0, "hard": 1}.get(difficulty, 0)
+    if player_level <= 2:
+        tier = "minion"
+    elif player_level <= 5:
+        tier = "standard"
+    elif player_level <= 9:
+        tier = "elite"
+    elif player_level <= 14:
+        tier = "boss"
+    else:
+        tier = "legendary"
+
+    tiers = list(ENCOUNTER_TABLE.keys())
+    idx = tiers.index(tier) + diff_bump
+    idx = max(0, min(len(tiers) - 1, idx))
+    tier = tiers[idx]
+
+    name, base_hp, base_ac, xp, loot_tier = random.choice(ENCOUNTER_TABLE[tier])
+    # Scale HP with player level
+    hp_scale = 1.0 + (player_level - 1) * 0.12
+    hp = int(base_hp * hp_scale)
+    ac = base_ac + (player_level // 5)
+    xp = int(xp * hp_scale)
+    return name, hp, ac, xp, loot_tier
+
+def roll_loot(loot_tier: str, luck_bonus: int = 0) -> list:
+    """Roll loot from the appropriate tier."""
+    items = []
+    pool = LOOT_TABLES.get(loot_tier, LOOT_TABLES["common"])
+    # Always one item
+    items.append(random.choice(pool))
+    # 30% chance of second item (+ luck)
+    if random.randint(1, 100) <= 30 + luck_bonus:
+        items.append(random.choice(pool))
+    # 10% chance to roll from one tier higher
+    tier_order = ["junk", "common", "uncommon", "rare", "epic", "legendary"]
+    if random.randint(1, 100) <= 10:
+        idx = tier_order.index(loot_tier) if loot_tier in tier_order else 1
+        if idx < len(tier_order) - 1:
+            items.append(random.choice(LOOT_TABLES[tier_order[idx + 1]]))
+    return items
+
+
+# ══════════════════════════════════════════════════════════════
+#  DM PERSONALITY SYSTEM — 3 Dungeon Master styles
+# ══════════════════════════════════════════════════════════════
+
+DM_STYLES = {
+    "dramatic": {
+        "name": "The Dramatist",
+        "icon": "🎭",
+        "desc": "Epic narration, high stakes, cinematic moments.",
+        "system_addon": (
+            "STYLE: You are a dramatic, cinematic storyteller. "
+            "Every scene is larger than life. Use vivid sensory details "
+            "— the smell of ozone before lightning, the rumble of "
+            "approaching hooves, the flicker of torchlight on ancient stone. "
+            "Build tension. Make the player feel like the hero of an epic saga."
+        ),
+        "combat_flavor": [
+            "Steel rings against steel as fate hangs in the balance!",
+            "The air crackles with the weight of the moment!",
+            "Time seems to slow as the blow connects!",
+            "A thunderclap of impact echoes through the chamber!",
+        ],
+        "death_quote": "The darkness claims another hero. But legends never truly die.",
+        "victory_quote": "And so the champion stands victorious, their name carved into the annals of history.",
+    },
+    "sardonic": {
+        "name": "The Wisecracker",
+        "icon": "😏",
+        "desc": "Dry wit, dark humor, fourth-wall-aware.",
+        "system_addon": (
+            "STYLE: You are a sardonic, witty DM with dry humor. "
+            "Narrate like a sarcastic author who's seen it all. "
+            "Slip in deadpan observations. NPCs can be sarcastic. "
+            "The world is dangerous but absurd. Never break character "
+            "but let your narrator voice have personality — think "
+            "Terry Pratchett meets a jaded tavern keeper."
+        ),
+        "combat_flavor": [
+            "Well, that's going to leave a mark.",
+            "Somewhere, a bard is taking notes for a very unflattering song.",
+            "The enemy looks personally offended by your competence.",
+            "Violence: the universal language. How heartwarming.",
+        ],
+        "death_quote": "And that, dear adventurer, is why we don't pick fights with things larger than our head.",
+        "victory_quote": "Congratulations. You've successfully converted a living thing into loot. Your parents would be so proud.",
+    },
+    "poetic": {
+        "name": "The Poet",
+        "icon": "📜",
+        "desc": "Lyrical prose, mythic tone, Tolkien-esque.",
+        "system_addon": (
+            "STYLE: You are a poetic, mythic storyteller in the tradition of "
+            "Tolkien and Le Guin. Your narration reads like ancient prose. "
+            "Use metaphor and rhythm. The world feels old and deep — "
+            "rivers remember, stones whisper, trees have watched empires "
+            "rise and fall. Nature is alive and watching. "
+            "Your voice is gentle but carries the weight of ages."
+        ),
+        "combat_flavor": [
+            "And the blade sang its crimson song.",
+            "In the silence between heartbeats, steel found flesh.",
+            "The old dance of death and defiance, played once more.",
+            "Like autumn leaves before the storm, the foe falters.",
+        ],
+        "death_quote": "And so the light passes into the grey lands beyond, where all rivers find the sea.",
+        "victory_quote": "The shadow retreats, and for a moment, the world remembers what it is to breathe.",
+    },
+}
+
+
+# ══════════════════════════════════════════════════════════════
+#  RANDOM EVENTS — Weather, merchants, strangers, traps
+# ══════════════════════════════════════════════════════════════
+
+WEATHER_TABLE = [
+    ("clear",       C.CYAN,    "☀️  Clear skies — good travel weather."),
+    ("cloudy",      C.GRAY,    "☁️  Overcast clouds hang low."),
+    ("rain",        C.BLUE,    "🌧️  Rain patters against your cloak. (-1 Perception)"),
+    ("fog",         C.GRAY,    "🌫️  Thick fog limits visibility. (-2 Perception)"),
+    ("storm",       C.YELLOW,  "⚡  Thunder rolls — lightning flashes. (-2 Stealth)"),
+    ("snow",        C.WHITE,   "❄️  Snow falls gently. Movement slowed."),
+    ("heatwave",    C.ORANGE,  "🔥  Scorching heat — CON save or lose 1d4 HP."),
+    ("wind",        C.CYAN,    "🌬️  Howling wind makes ranged attacks harder."),
+    ("beautiful",   C.GREEN,   "🌅  A beautiful dawn breaks. +1 to all checks this scene."),
+    ("eerie calm",  C.MAGENTA, "🌑  An unnatural stillness. Something is watching."),
+]
+
+RANDOM_EVENTS = [
+    {
+        "name": "Wandering Merchant",
+        "weight": 15,
+        "prompt": "A merchant approaches with unusual wares. Describe them and their goods briefly. Offer [A] trade [B] ignore.",
+        "effect": None,
+    },
+    {
+        "name": "Mysterious Stranger",
+        "weight": 10,
+        "prompt": "A cloaked stranger appears — they know your name. Describe the encounter dramatically. Offer [A] listen [B] draw weapon.",
+        "effect": None,
+    },
+    {
+        "name": "Hidden Trap",
+        "weight": 12,
+        "check": "perception",
+        "prompt": "The player {result} a hidden trap. Narrate the outcome. If failed: 1d6 damage. Offer [A]/[B] choices.",
+        "effect": "trap_damage",
+    },
+    {
+        "name": "Abandoned Camp",
+        "weight": 10,
+        "prompt": "The party discovers an abandoned campsite. Signs of a hasty departure. Something was left behind. Offer [A] search [B] move on.",
+        "effect": None,
+    },
+    {
+        "name": "Distant Battle",
+        "weight": 8,
+        "prompt": "Sounds of combat echo from nearby — screams, steel, something inhuman. Offer [A] investigate [B] avoid.",
+        "effect": None,
+    },
+    {
+        "name": "Healing Spring",
+        "weight": 5,
+        "prompt": "A natural spring glows faintly with restorative energy. Describe it beautifully. The player heals 2d6 HP.",
+        "effect": "heal_spring",
+    },
+    {
+        "name": "Ominous Omen",
+        "weight": 8,
+        "prompt": "An omen appears — a raven with three eyes, a bloodied sun, a whispering wind. Describe it cryptically. This foreshadows danger. Offer [A]/[B].",
+        "effect": None,
+    },
+    {
+        "name": "Lost Child",
+        "weight": 6,
+        "prompt": "A lost child appears on the road, frightened and alone. Helping gains notoriety. Ignoring costs it. Offer [A] help [B] keep walking.",
+        "effect": None,
+    },
+    {
+        "name": "Treasure Glint",
+        "weight": 8,
+        "prompt": "Something glints in the underbrush — could be treasure, could be a trap. Offer [A] investigate [B] leave it.",
+        "effect": None,
+    },
+    {
+        "name": "Old Battlefield",
+        "weight": 5,
+        "prompt": "You cross an ancient battlefield. Bones and rusted weapons litter the ground. The dead do not always rest. Offer [A] search [B] pray and move on.",
+        "effect": None,
+    },
+]
+
+def roll_weather() -> tuple:
+    """Roll random weather. Returns (name, color, description)."""
+    return random.choice(WEATHER_TABLE)
+
+def choose_dm_style(state: dict):
+    """Let the player pick a DM personality style."""
+    header("DUNGEON MASTER STYLE", C.MAGENTA)
+    styles = list(DM_STYLES.items())
+    for i, (key, data) in enumerate(styles, 1):
+        print(f"  [{i}] {C.BOLD}{data.get('icon','')} {key.upper()}{C.RESET} — {data['desc']}")
+    print(f"  {C.GRAY}[Enter] Keep current ({state.get('dm_style', 'dramatic').upper()}){C.RESET}\n")
+    choice = input("  Choose style: ").strip()
+    if choice.isdigit() and 1 <= int(choice) <= len(styles):
+        picked = styles[int(choice) - 1]
+        state["dm_style"] = picked[0]
+        cprint(C.MAGENTA, f"  DM style set to {picked[1].get('icon','')} {picked[0].upper()} — {picked[1]['desc']}")
+    else:
+        cprint(C.GRAY, f"  Keeping {state.get('dm_style', 'dramatic').upper()} style.")
+
+
+def roll_random_event(player: dict, state: dict) -> Optional[dict]:
+    """Maybe trigger a random event. Returns event dict or None."""
+    # 20% base chance per non-combat turn
+    if random.randint(1, 100) > 20:
+        return None
+    # Weighted selection
+    total_weight = sum(e["weight"] for e in RANDOM_EVENTS)
+    r = random.randint(1, total_weight)
+    cumulative = 0
+    for event in RANDOM_EVENTS:
+        cumulative += event["weight"]
+        if r <= cumulative:
+            return event
+    return None
+
+def apply_event_effect(event: dict, player: dict):
+    """Apply mechanical effects of random events."""
+    eff = event.get("effect")
+    if eff == "trap_damage":
+        dmg, _ = roll(6)
+        player["hp"] = max(0, player.get("hp", 1) - dmg)
+        cprint(C.RED, f"  💥 Trap! You take {dmg} damage. HP: {player['hp']}/{max_hp(player)}")
+    elif eff == "heal_spring":
+        heal, _ = roll(6, 2)
+        player["hp"] = min(max_hp(player), player.get("hp", 1) + heal)
+        cprint(C.GREEN, f"  ✨ The spring restores {heal} HP. HP: {player['hp']}/{max_hp(player)}")
+
+
+# ══════════════════════════════════════════════════════════════
+#  QUEST JOURNAL
+# ══════════════════════════════════════════════════════════════
+
+def add_quest(state: dict, title: str, description: str, quest_type: str = "main"):
+    """Add a quest to the journal."""
+    state.setdefault("quests", [])
+    quest = {
+        "title": title,
+        "description": description,
+        "type": quest_type,  # main, side, bounty
+        "status": "active",
+        "added_session": state.get("session_number", 1),
+        "objectives": [],
+    }
+    state["quests"].append(quest)
+    cprint(C.YELLOW, f"\n  📜 NEW QUEST: {title}")
+    cprint(C.GRAY, f"     {description}")
+
+def complete_quest(state: dict, index: int):
+    """Mark a quest as complete."""
+    quests = state.get("quests", [])
+    if 0 <= index < len(quests):
+        quests[index]["status"] = "complete"
+        cprint(C.GREEN, f"  ✓ Quest complete: {quests[index]['title']}")
+
+def show_quests(state: dict):
+    """Display the quest journal."""
+    quests = state.get("quests", [])
+    header("QUEST JOURNAL", C.YELLOW)
+    if not quests:
+        cprint(C.GRAY, "  No quests yet. The adventure awaits.")
+        return
+
+    active = [q for q in quests if q["status"] == "active"]
+    done = [q for q in quests if q["status"] == "complete"]
+
+    if active:
+        cprint(C.YELLOW, "  ══ ACTIVE QUESTS ══", wrap=False)
+        for i, q in enumerate(quests):
+            if q["status"] == "active":
+                icon = {
+                    "main": f"{C.YELLOW}★",
+                    "side": f"{C.CYAN}○",
+                    "bounty": f"{C.RED}⚔",
+                }.get(q["type"], f"{C.GRAY}○")
+                print(f"  {icon} [{i + 1}]{C.RESET} {C.BOLD}{q['title']}{C.RESET}")
+                print(f"       {C.GRAY}{q['description']}{C.RESET}")
+                if q.get("objectives"):
+                    for obj in q["objectives"]:
+                        done_mark = cc(C.GREEN, "✓") if obj.get("done") else cc(C.GRAY, "○")
+                        print(f"       {done_mark} {obj['text']}")
+        print()
+
+    if done:
+        cprint(C.GREEN, "  ══ COMPLETED ══", wrap=False)
+        for q in done:
+            print(f"  {C.GREEN}✓{C.RESET} {C.GRAY}{q['title']}{C.RESET}")
+    divider()
+
+
+# ══════════════════════════════════════════════════════════════
+#  CAMPFIRE REST SYSTEM — Atmospheric rest scenes
+# ══════════════════════════════════════════════════════════════
+
+CAMPFIRE_ART = [
+    "       *    .  *       .        *    .  ",
+    "    .    *    .    *  .    .   *    .   ",
+    "           (                            ",
+    "          ) \\  .  .                     ",
+    "         /   \\                          ",
+    "        / 🔥  \\     * * *               ",
+    "       (  🔥🔥  )   * camp *              ",
+    "  ~~~~~`------´~~~~~* * *~~~~~~~~~~~    ",
+]
+
+DREAM_TABLE = [
+    "You dream of a vast ocean, and something enormous moves beneath the surface.",
+    "In your dream, a voice speaks your name from inside a mountain.",
+    "You dream you are falling through stars, and each one whispers a secret.",
+    "A figure made of shadow offers you a key. You wake before you can take it.",
+    "You dream of the first home you ever knew, but the rooms have changed.",
+    "In the dream, your weapon speaks. It tells you its real name.",
+    "You dream of a door that shouldn't exist. Behind it, laughter.",
+    "A great tree grows from your chest in the dream. Birds nest in your ribs.",
+    "You relive a battle, but this time your enemy stops and asks: 'Why?'",
+    "You dream of a feast laid for one. Every chair has a name carved in it. Yours is at the head.",
+    "A child version of you stares across a river. They mouth something you can't hear.",
+    "You dream of walking a road that never ends, and you don't want it to.",
+]
+
+WATCH_EVENTS = [
+    "Nothing stirs. The night is peaceful.",
+    "An owl hoots three times. Old folk say that means change is coming.",
+    "You hear distant howling. It stops abruptly.",
+    "A shooting star crosses the sky. You make a wish.",
+    "The wind carries a faint melody. When you listen harder, it's gone.",
+    "Fireflies dance at the edge of the clearing. For a moment, they seem to form a pattern.",
+    "Something large moves through the trees. It doesn't approach.",
+    "You find a small flower growing from a crack in the stone. It shouldn't be alive.",
+    "The fire dims for no reason, then flares back brighter than before.",
+    "You hear your name on the wind. Probably nothing.",
+]
+
+def campfire_rest(player: dict, companions: List[dict], state: dict):
+    """Full campfire rest sequence with atmosphere."""
+    print()
+    print_art(CAMPFIRE_ART, C.ORANGE, centered=False)
+    header("CAMPFIRE REST", C.ORANGE)
+
+    # Weather
+    w_name, w_col, w_desc = roll_weather()
+    print(f"  {w_col}{w_desc}{C.RESET}\n")
+
+    # Watch shift
+    cprint(C.GRAY, "  First watch...\n", wrap=False)
+    time.sleep(0.5)
+    watch_event = random.choice(WATCH_EVENTS)
+    cprint(C.CYAN, f"  {watch_event}")
+    print()
+
+    # Companion banter (if any)
+    if companions:
+        alive = [c for c in companions if c.get("alive", True)]
+        if alive:
+            talker = random.choice(alive)
+            banter = ai_call([{"role": "user", "content":
+                f"{talker['name']} ({talker['archetype']}, personality: {talker['personality']}) "
+                f"says ONE short sentence to the party around a campfire. "
+                f"In character. No preamble."}], max_tokens=40)
+            col = COMP_COLORS.get(talker["name"].lower(), C.WHITE)
+            print(f"  {col}{C.BOLD}{talker['name']}:{C.RESET} {col}\"{banter}\"{C.RESET}\n")
+
+    # Rest options
+    print(f"  {C.BOLD}[1]{C.RESET} Short Rest  — recover some HP + all spell slots")
+    print(f"  {C.BOLD}[2]{C.RESET} Long Rest   — full HP, all slots, clear conditions")
+    print(f"  {C.BOLD}[3]{C.RESET} Keep Watch  — stay alert (skip rest)")
+    action = input(f"\n  {C.ORANGE}>{C.RESET} ").strip()
+
+    if action == "1":
+        # Short rest
+        init_slots(player)
+        con_rec = max(1, player.get("level", 1) // 2 + mod(player.get("stats", {}).get("CON", 10)))
+        player["hp"] = min(max_hp(player), player.get("hp", 1) + con_rec)
+        cprint(C.GREEN, f"  Recovered {con_rec} HP. ({player['hp']}/{max_hp(player)})")
+        cprint(C.MAGENTA, f"  Spell slots restored.")
+    elif action == "2":
+        # Long rest
+        player["hp"] = max_hp(player)
+        init_slots(player)
+        player["conditions"] = []
+        cprint(C.GREEN, f"  Fully rested. HP: {player['hp']}/{max_hp(player)}")
+        cprint(C.MAGENTA, f"  All spell slots restored. Conditions cleared.")
+        # Dream
+        dream = random.choice(DREAM_TABLE)
+        print(f"\n  {C.MAGENTA}{C.ITALIC}  You dream...{C.RESET}")
+        cprint(C.MAGENTA, f"  {dream}")
+    elif action == "3":
+        # Keep watch — chance to spot danger early
+        cprint(C.CYAN, "  You keep watch through the night. Your eyes are sharp.")
+        # 20% chance of spotting something
+        if random.randint(1, 5) == 1:
+            cprint(C.YELLOW, "  👁  You spot movement in the darkness. You're prepared!")
+            state["_watch_bonus"] = True  # advantage on next ambush
+
+    print()
+    divider("~", C.ORANGE)
+    cprint(C.GRAY, "  Dawn breaks. The road calls.")
+    print()
+
+
+# ══════════════════════════════════════════════════════════════
 #  LLM ENGINE — Ollama via OpenAI SDK, Pi 4 optimized
 # ══════════════════════════════════════════════════════════════
 
@@ -1261,12 +1896,29 @@ def build_system_prompt(state: dict, player: dict, companions: List[dict]) -> st
     cond_str = f" CONDITIONS: {','.join(conds)}" if conds else ""
     slot_str = f" Slots:{slots}/{mslots}" if mslots else ""
 
+    # Weather context
+    weather_str = ""
+    if state.get("_current_weather"):
+        weather_str = f"\nWEATHER: {state['_current_weather']}"
+
+    # DM personality injection
+    dm_style = state.get("dm_style", "dramatic")
+    style_data = DM_STYLES.get(dm_style, DM_STYLES["dramatic"])
+    style_addon = style_data["system_addon"]
+
+    # Quest context
+    quest_str = ""
+    active_quests = [q for q in state.get("quests", []) if q["status"] == "active"]
+    if active_quests:
+        quest_str = "\nACTIVE QUESTS: " + "; ".join(q["title"] for q in active_quests[:3])
+
     return f"""You are a Dungeon Master running a D&D adventure.
+{style_addon}
 
 CHARACTER: {player['name']} ({player['race']} {player['class']} Lv{player['level']}) — {hp_note}{cond_str}{slot_str}
 WEAPON: {eq.get('weapon', 'none')} | ARMOR: {eq.get('armor', 'none')} | GOLD: {player.get('gold', 0)}gp
 PARTY: {comp_str}
-{story}
+{story}{weather_str}{quest_str}
 
 CRITICAL: You are narrating for {player['name']} ONLY. Do not narrate actions for any other player character.
 If companions act, describe their actions briefly. {player['name']} is the hero of this story.
@@ -1657,6 +2309,10 @@ def run_combat(player: dict, companions: List[dict], state: dict,
     show_enemy_portrait(enemy_name)
     show_banner("fight")
     p_init, e_init = roll_initiative(player, enemy_name)
+    # DM style combat flavor
+    dm_style = state.get("dm_style", "dramatic")
+    style_data = DM_STYLES.get(dm_style, DM_STYLES["dramatic"])
+    cprint(C.MAGENTA, f"  {random.choice(style_data['combat_flavor'])}")
     input(f"\n  {C.GRAY}[ Press Enter to begin combat ]{C.RESET}")
 
     while player.get("hp", 1) > 0 and enemy_hp > 0:
@@ -1717,17 +2373,27 @@ def run_combat(player: dict, companions: List[dict], state: dict,
         if enemy_hp <= 0:
             xp_reward = {"easy": 150, "normal": 300, "hard": 500}.get(
                 state.get("difficulty", "normal"), 300)
-            gold_loot = random.randint(5, 25)
-            loot_items = []
-            if random.random() > 0.7:
-                loot_pool = ["Health Potion", "Bandage Kit", "Adventurer's Ration",
-                             "Silver Arrow x5", "Antidote", "Thieves' Tools"]
-                loot_items.append(random.choice(loot_pool))
+            gold_loot = random.randint(5, 25) + player.get("level", 1) * 3
+            # Determine loot tier from state (set by scale_encounter) or from level
+            loot_tier = state.pop("_combat_loot_tier", None)
+            if not loot_tier:
+                lvl = player.get("level", 1)
+                if lvl <= 2:   loot_tier = "common"
+                elif lvl <= 5: loot_tier = "uncommon"
+                elif lvl <= 9: loot_tier = "rare"
+                elif lvl <= 14: loot_tier = "epic"
+                else:           loot_tier = "legendary"
+            loot_items = roll_loot(loot_tier)
+            if loot_items:
                 player.setdefault("inventory", []).extend(loot_items)
             player["gold"] = player.get("gold", 0) + gold_loot
 
+            # DM style victory flavor
+            dm_style = state.get("dm_style", "dramatic")
+            style_data = DM_STYLES.get(dm_style, DM_STYLES["dramatic"])
             show_banner("victory")
             cprint(C.GREEN, f"  ✓ {enemy_name} defeated!")
+            cprint(C.MAGENTA, f"  {style_data['victory_quote']}")
             cprint(C.YELLOW, f"  +{xp_reward} XP  +{gold_loot} gold")
             if loot_items:
                 cprint(C.YELLOW, f"  Loot: {', '.join(loot_items)}")
@@ -1751,8 +2417,11 @@ def run_combat(player: dict, companions: List[dict], state: dict,
 
         # Death
         if player["hp"] <= 0:
+            dm_style = state.get("dm_style", "dramatic")
+            style_data = DM_STYLES.get(dm_style, DM_STYLES["dramatic"])
             show_banner("death")
             cprint(C.RED, f"  {player['name']} has been defeated by {enemy_name}.")
+            cprint(C.MAGENTA, f"  {style_data['death_quote']}")
             return "defeat"
 
         round_num += 1
@@ -2165,6 +2834,10 @@ def print_help():
   {C.CYAN}/map{C.RESET}                 Show dungeon map
   {C.CYAN}/equip <item>{C.RESET}        Equip an item
   {C.CYAN}/ooc <msg>{C.RESET}           Out-of-character note
+  {C.CYAN}/quests{C.RESET}              Quest journal
+  {C.CYAN}/camp{C.RESET}                Make camp — rest, dream, keep watch
+  {C.CYAN}/dm{C.RESET}                  Change DM personality style
+  {C.CYAN}/weather{C.RESET}             Check the sky / re-roll weather
   {C.CYAN}/quit{C.RESET}                Save and end session
 {C.BLUE}  ──────────────────────────────────────────────────────────{C.RESET}""")
 
@@ -2367,6 +3040,15 @@ def main():
     if diff_ch in ("easy", "normal", "hard"):
         state["difficulty"] = diff_ch
 
+    # DM personality style
+    choose_dm_style(state)
+
+    # Roll starting weather
+    weather_name, weather_color, weather_desc = roll_weather()
+    state["_current_weather"] = f"{weather_name} — {weather_desc}"
+    print(f"\n  {C.BOLD}{weather_color}☁  Weather: {weather_name}{C.RESET}")
+    cprint(C.GRAY, f"  {weather_desc}")
+
     # Session start
     print(f"\n{C.BOLD}{C.MAGENTA}{'═' * W}{C.RESET}")
     print(f"{C.BOLD}{C.CYAN}  SESSION #{state['session_number']} — {state['title'].upper()}{C.RESET}")
@@ -2457,9 +3139,10 @@ def main():
         if fight_match and not user_input.startswith("/"):
             target = fight_match.group(2).strip().title()
             cprint(C.RED, f"\n  ⚔  Entering combat with {target}...")
-            ehp = random.randint(14, 32)
-            eac = random.randint(11, 16)
-            outcome = run_combat(p, comps, state, all_chars, target, ehp, eac)
+            f_enc = scale_encounter(p.get("level", 1), state.get("difficulty", "normal"))
+            _, f_hp, f_ac, _, f_loot_tier = f_enc
+            state["_combat_loot_tier"] = f_loot_tier
+            outcome = run_combat(p, comps, state, all_chars, target, f_hp, f_ac)
             save_chars(all_chars)
             if outcome == "defeat":
                 end_session(state, p, comps, all_chars)
@@ -2517,8 +3200,11 @@ def main():
                 show_dungeon_map()
             elif cmd == "/combat":
                 enemy = parts[1] if len(parts) > 1 else "Bandit"
+                cmd_enc = scale_encounter(p.get("level", 1), state.get("difficulty", "normal"))
+                _, cmd_hp, cmd_ac, _, cmd_loot_tier = cmd_enc
+                state["_combat_loot_tier"] = cmd_loot_tier
                 outcome = run_combat(p, comps, state, all_chars, enemy,
-                                     random.randint(15, 35), random.randint(11, 16))
+                                     cmd_hp, cmd_ac)
                 save_chars(all_chars)
                 if outcome == "defeat":
                     end_session(state, p, comps, all_chars)
@@ -2559,6 +3245,20 @@ def main():
                             cprint(C.GREEN, f"  Equipped {match} as armor.")
                     else:
                         cprint(C.RED, f"  '{item_name}' not in inventory.")
+            elif cmd == "/quests":
+                show_quests(state)
+            elif cmd == "/camp":
+                campfire_rest(p, comps, state)
+                save_chars(all_chars)
+            elif cmd == "/dm":
+                choose_dm_style(state)
+                save_campaign(state)
+            elif cmd == "/weather":
+                w_name, w_color, w_desc = roll_weather()
+                state["_current_weather"] = f"{w_name} — {w_desc}"
+                print(f"\n  {C.BOLD}{w_color}☁  Weather shifts to: {w_name}{C.RESET}")
+                cprint(C.GRAY, f"  {w_desc}")
+                save_campaign(state)
             elif cmd == "/ooc":
                 if len(parts) > 1:
                     cprint(C.GRAY, f"  [OOC: {parts[1]}]")
@@ -2574,14 +3274,14 @@ def main():
                 random.randint(1, 10) == 1 and
                 not user_input.startswith("/")):
             state["last_ambush_turn"] = turn_count
-            ambush_enemies = ["Goblin Scout", "Bandit", "Wolf", "Skeleton",
-                              "Orc Raider", "Cultist", "Giant Spider", "Cave Troll"]
-            ambush_name = random.choice(ambush_enemies)
+            enc = scale_encounter(p.get("level", 1), state.get("difficulty", "normal"))
+            ambush_name, ambush_hp, ambush_ac, ambush_xp, ambush_loot_tier = enc
+            state["_combat_loot_tier"] = ambush_loot_tier
             show_banner("ambush")
             cprint(C.RED, f"\n  ⚠  AMBUSH! A {ambush_name} strikes from the shadows!")
             input(f"  {C.GRAY}[ Press Enter to fight! ]{C.RESET}")
             outcome = run_combat(p, comps, state, all_chars, ambush_name,
-                                 random.randint(12, 28), random.randint(11, 15))
+                                 ambush_hp, ambush_ac)
             save_chars(all_chars)
             if outcome == "defeat":
                 end_session(state, p, comps, all_chars)
@@ -2606,6 +3306,14 @@ def main():
         detect_and_show_scene(resp)
         dm_print(resp)
 
+        # Random event check (20% chance, weighted selection)
+        rand_event = roll_random_event(p, state)
+        if rand_event:
+            print(f"\n  {C.BOLD}{C.ORANGE}⚠  {rand_event['name'].upper()}{C.RESET}")
+            cprint(C.YELLOW, f"  {rand_event['description']}")
+            apply_event_effect(rand_event, p)
+            state["session_log"].append(f"[EVENT] {rand_event['name']}: {rand_event['description']}")
+
         # Auto-detect combat from DM narration
         combat_triggers = ["attacks you", "charges at you", "lunges toward",
                            "draws their weapon", "battle begins", "combat starts",
@@ -2618,8 +3326,11 @@ def main():
                     enemy_name = c.capitalize()
                     break
             cprint(C.RED, f"\n  ⚔  {enemy_name} engages! Entering combat...")
+            auto_enc = scale_encounter(p.get("level", 1), state.get("difficulty", "normal"))
+            _, auto_hp, auto_ac, _, auto_loot_tier = auto_enc
+            state["_combat_loot_tier"] = auto_loot_tier
             outcome = run_combat(p, comps, state, all_chars, enemy_name,
-                                 random.randint(15, 40), random.randint(11, 16))
+                                 auto_hp, auto_ac)
             save_chars(all_chars)
             if outcome == "defeat":
                 end_session(state, p, comps, all_chars)
