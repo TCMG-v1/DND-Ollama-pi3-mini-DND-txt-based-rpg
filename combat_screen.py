@@ -10,7 +10,8 @@
   Co-created by Icycereal477TCMG-v1 & Claude (Anthropic)
 ================================================================
 """
-import random, time, textwrap, re
+import textwrap
+import re
 
 class C:
     RESET   = "\033[0m";  BOLD    = "\033[1m"
@@ -515,11 +516,11 @@ def combat_intro(player: dict, enemy_name: str,
     right = [
         f"{C.BOLD}{C.CYAN}{player['name']}{C.RESET}  {C.GRAY}Lvl {player.get('level',1)} {player.get('class','?')}{C.RESET}",
         f"HP  [{phbar}] {phcol}{php}/{pmhp}{C.RESET}",
-        f"",
+        "",
         f"  {C.BOLD}INITIATIVE{C.RESET}",
         f"  {C.GREEN}You:   {p_init:>2}{C.RESET}",
         f"  {C.RED}Enemy: {e_init:>2}{C.RESET}",
-        f"",
+        "",
     ]
     if p_init >= e_init:
         right.append(f"  {C.BOLD}{C.GREEN}✓ YOU act FIRST!{C.RESET}")

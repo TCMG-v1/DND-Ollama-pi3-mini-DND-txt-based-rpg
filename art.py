@@ -250,70 +250,6 @@ def portrait_paladin():
     ]
     _print_art(lines, C.CYAN)
 
-def portrait_druid():
-    lines = [
-        r"     ~ ~ ~ ~ ~ ~",
-        r"      ,--~~~--.",
-        "     / (@) (@) \\\\",
-        r"    | leaf leaf  |",
-        r"     \ ~~~~~~~ /",
-        r"   ~~.--'---'--.~~",
-        r"  ~~ /  roots  \\ ~~",
-        r"  ~ |  of  the  | ~",
-        r"  ~~ \ ~earth~ / ~~",
-        r"   ~~~'-------'~~~",
-        r"  🌿 Nature's will made flesh 🌿",
-    ]
-    _print_art(lines, C.GREEN)
-
-def portrait_monk():
-    lines = [
-        r"          o",
-        "         /|\\\\",
-        r"          |",
-        "         / \\\\",
-        r"        '   '",
-        r"       _|_|_|_",
-        r"      |  . .  |",
-        r"      |  ---  |",
-        r"      |_______|",
-        r"       | | | |",
-        r"  ☯  Empty mind, iron fist  ☯",
-    ]
-    _print_art(lines, C.WHITE)
-
-def portrait_sorcerer():
-    lines = [
-        r"    *  .  *  .  *  .  *",
-        r"   . ~~~~~~~~~~~~~~~ .",
-        r"  *  /  * * * * * \  *",
-        r"    | * (o)   (o) * |",
-        r"  .  \   ~POWER~   /  .",
-        r"  *   '~~~~~~~~~~~'   *",
-        r"    . /|  |||||  |\\ .",
-        r"   *  | |  |||  | |  *",
-        r"      |_|_______| |",
-        r"    .  '---------'  .",
-        r"  ✦ Born of arcane blood ✦",
-    ]
-    _print_art(lines, C.MAGENTA)
-
-def portrait_paladin():
-    lines = [
-        r"         ✛✛✛",
-        r"       ,-----.",
-        "      /  [ ] \\\\",
-        r"     | (+ + +)|",
-        r"      \ ~~~~~ /",
-        r"    .--'-----'--..",
-        "   / |HOLY|HOLY| \\\\",
-        r"  |  |===|+|===|  |",
-        r"   \ |___|_|___| /",
-        r"    '---'   '---'",
-        r"  ⚔✛ Oath sworn, blade blessed ✛⚔",
-    ]
-    _print_art(lines, C.CYAN)
-
 CLASS_PORTRAITS = {
     "Warlock":   portrait_warlock,
     "Fighter":   portrait_fighter,
@@ -798,7 +734,6 @@ _art_shown = {}
 
 def detect_and_show(response: str, player: dict = None):
     """Smart art detection — avoids false positives and spam."""
-    import re
     text = response.lower()
 
     # Always show HUD if player provided

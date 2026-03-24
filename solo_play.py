@@ -8,7 +8,7 @@
   Run: python3 solo_play.py
 ================================================================
 """
-import json, os, textwrap, random, sys
+import json, os, textwrap, random
 from typing import Dict, List, Optional
 from datetime import datetime
 from dotenv import load_dotenv
@@ -29,16 +29,15 @@ except ImportError:
 
 try:
     from combat import (combat_menu, resolve_action, build_combat_narration,
-                        show_talent_tree, grant_talent_point, get_notoriety_perks,
-                        apply_merchant_discount, show_combat_header, _simple_max_hp)
+                        show_talent_tree,
+                        apply_merchant_discount, show_combat_header)
     COMBAT_AVAILABLE = True
 except ImportError:
     COMBAT_AVAILABLE = False
 
 try:
-    from dice import (challenge_screen, roll_dice_display, roll_initiative,
-                      saving_throw, ability_check, show_compass,
-                      quick_roll, infer_check, CHECK_PROFILES)
+    from dice import (challenge_screen, roll_initiative,
+                      show_compass, infer_check)
     DICE_AVAILABLE = True
 except ImportError:
     DICE_AVAILABLE = False
@@ -137,7 +136,7 @@ def dm_print(text: str):
             print(f"  \033[1m\033[93m[B] {s[3:].strip()}\033[0m")
             continue
         if RE_CHOICE_O.match(s):
-            print(f"  \033[90m[O] Other\033[0m\n")
+            print("  \033[90m[O] Other\033[0m\n")
             continue
         m = RE_NPC_FMT.match(s)
         if m:
@@ -422,8 +421,8 @@ XP_THRESH = {
 }
 def xp_next(lvl:int) -> int: return XP_THRESH.get(lvl,999999)
 def lvl_up_check(char:dict) -> Optional[int]:
-    l = char.get("level",1)
-    return l+1 if l<20 and char.get("xp",0)>=xp_next(l) else None
+    lvl = char.get("level",1)
+    return lvl+1 if lvl<20 and char.get("xp",0)>=xp_next(lvl) else None
 
 # ══════════════════════ SAVE/LOAD ═════════════════════════════
 def load_chars() -> Dict[str,dict]:
@@ -873,16 +872,6 @@ def show_inventory(p:dict):
     # ── Body diagram + equipped ──────────────────────────────
     print(f"{C.YELLOW}╠{'═'*(W-2)}╣{C.RESET}")
     print(f"{C.YELLOW}║{C.RESET}  {C.BOLD}EQUIPPED{C.RESET}")
-    body = [
-        f"           {C.GRAY}.--.",C.RESET,
-        f"           {C.GRAY}|  |{C.RESET}   HEAD",
-        f"          {C.GRAY}/|  |\\{C.RESET}",
-        f"         {C.GRAY}/ |  | \\{C.RESET}  BODY",
-        f"        {C.GRAY}|  |  |  |{C.RESET}",
-        f"           {C.GRAY}|  |{C.RESET}",
-        f"          {C.GRAY}/    \\{C.RESET}",
-        f"         {C.GRAY}/      \\{C.RESET}",
-    ]
     slot_display = {
         "weapon":  eq.get("weapon","—") or "—",
         "armor":   eq.get("armor","—") or "—",
@@ -949,8 +938,11 @@ def show_companions(comps:List[dict]):
 
 # ══════════════════════ EQUIP / TRADE ═════════════════════════
 def equip_item(p:dict, item_name:str):
-    inv=p.get("inventory",[]); match=next((i for i in inv if i.lower()==item_name.lower()),None)
-    if not match: cprint(C.RED,f"  '{item_name}' not in inventory."); return
+    inv = p.get("inventory", [])
+    found = next((i for i in inv if i.lower() == item_name.lower()), None)
+    if not found:
+        cprint(C.RED, f"  '{item_name}' not in inventory.")
+        return
     eq=p.setdefault("equipped",{"weapon":"","armor":"","offhand":"","accessory":""})
     if match in WEAPONS:
         old=eq.get("weapon",""); eq["weapon"]=match
@@ -1228,7 +1220,6 @@ def run_combat_encounter(player:dict, companions:List[dict], state:dict,
         cprint(C.RED, f"  ⚔  {enemy_name} (HP:{enemy_hp} AC:{enemy_ac})")
         input("  [ Press Enter ]")
 
-    player_first = p_init >= e_init
 
     while player.get("hp",1) > 0 and enemy_hp > 0:
         # ── Draw combat screen ─────────────────────────────────
@@ -1633,7 +1624,6 @@ def main():
             continue
 
         # ── Random ambush check ──────────────────────────────
-        import time as _time
         _turn_count = state.get("turn_count", 0) + 1
         state["turn_count"] = _turn_count
         _last_ambush = state.get("last_ambush_turn", -99)

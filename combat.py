@@ -8,12 +8,10 @@
 ================================================================
 """
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 try:
-    from combat_screen import (draw_combat_screen, damage_floater,
-                                enemy_death_screen, player_death_screen,
-                                combat_intro, narration_box)
+    from combat_screen import draw_combat_screen
     SCREEN_AVAILABLE = True
 except ImportError:
     SCREEN_AVAILABLE = False
@@ -776,7 +774,6 @@ def build_combat_narration(player: dict, action: dict, enemy_name: str,
     """
     Build a rich prompt for the AI to narrate this combat round.
     """
-    stats = player.get("stats", {})
     action_type = action["type"]
     action_name = action["name"]
     hit     = result.get("hit", False)
@@ -912,7 +909,7 @@ def resolve_action(player: dict, action: dict, enemy_ac: int, enemy_hp: int, ene
         if stype == "spell":
             player["spell_slots_current"] = max(0, slots - spell.get("slots",1))
             if player["spell_slots_current"] == 0:
-                cprint(C.RED, f"  ⚠  Last spell slot used!")
+                cprint(C.RED, "  ⚠  Last spell slot used!")
 
         return result
 
