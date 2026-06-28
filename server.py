@@ -624,7 +624,7 @@ class DnDServer:
         save_characters(self.all_characters)
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             log_snippet = " | ".join(self.state.session_log[-6:])
             resp = await loop.run_in_executor(
                 None,
