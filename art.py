@@ -260,9 +260,6 @@ CLASS_PORTRAITS = {
     "Barbarian": portrait_barbarian,
     "Bard":      portrait_bard,
     "Paladin":   portrait_paladin,
-    "Druid":     portrait_druid,
-    "Monk":      portrait_monk,
-    "Sorcerer":  portrait_sorcerer,
 }
 
 # ══════════════════════════════════════════════════════════════
