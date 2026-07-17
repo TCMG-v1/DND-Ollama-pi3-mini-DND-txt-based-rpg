@@ -689,14 +689,15 @@ class DnDServer:
             role_resp = await self.prompt(pid, "  Join as [P]layer or [D]M? ")
             if role_resp.upper() == "D":
                 dm_pass = os.getenv("DM_PASSWORD", "")
-                if dm_pass:
+                if not dm_pass:
+                    await self.send_to(pid, "  DM access unavailable: DM password is not configured. Joining as player.")
+                    log.warning(f"Denied DM login for {pid}: DM_PASSWORD is not configured")
+                else:
                     entered = await self.prompt(pid, "  DM password: ")
                     if entered != dm_pass:
                         await self.send_to(pid, "  Wrong password — joining as player.")
                     else:
                         self.players[pid]["role"] = "dm"
-                else:
-                    self.players[pid]["role"] = "dm"
 
             if self.players[pid]["role"] == "dm":
                 await self.send_to(pid, f"\n  Welcome DM {display}. Type /help for commands.\n")
