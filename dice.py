@@ -5,7 +5,9 @@
              WASD compass, initiative
 ================================================================
 """
-import random, time, textwrap, re
+import random
+import time
+import textwrap
 
 class C:
     RESET   = "\033[0m";  BOLD    = "\033[1m"
@@ -221,7 +223,6 @@ CHECK_PROFILES = {
     "track":      (1,20,"WIS",13,"🐾 SURVIVAL CHECK",     C.GREEN),
     "heal":       (1,20,"WIS",13,"💚 MEDICINE CHECK",     C.GREEN),
     "perform":    (1,20,"CHA",13,"🎵 PERFORMANCE CHECK",  C.YELLOW),
-    "persuade":   (1,20,"CHA",13,"💬 PERSUASION CHECK",   C.GREEN),
     "endure":     (1,20,"CON",14,"❤  CONSTITUTION SAVE",  C.RED),
     "barter":     (1,20,"CHA",12,"💰 BARTERING CHECK",    C.YELLOW),
     "recall":     (1,20,"INT",13,"📚 ARCANA CHECK",       C.CYAN),

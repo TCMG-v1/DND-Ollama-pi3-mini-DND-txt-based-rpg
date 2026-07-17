@@ -17,13 +17,19 @@
 """
 __version__ = "5.0.0-pi4"
 
-import json, os, sys, random, textwrap, re, time, tempfile, shutil
-import asyncio, socket, signal, hashlib, argparse, logging
+import json
+import os
+import random
+import textwrap
+import re
+import tempfile
+import shutil
+import argparse
+import logging
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime
 from pathlib import Path
-from collections import deque
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 
 # ── Optional deps (graceful fallback) ─────────────────────────
 try:
@@ -1113,8 +1119,8 @@ def xp_next(lvl: int) -> int:
     return XP_THRESH.get(lvl, 999999)
 
 def lvl_up_check(char: dict) -> Optional[int]:
-    l = char.get("level", 1)
-    return l + 1 if l < 20 and char.get("xp", 0) >= xp_next(l) else None
+    lvl = char.get("level", 1)
+    return lvl + 1 if lvl < 20 and char.get("xp", 0) >= xp_next(lvl) else None
 
 def add_condition(char: dict, cond: str):
     char.setdefault("conditions", [])
@@ -2180,7 +2186,6 @@ def generate_dungeon_map(size: int = 5) -> List[List[str]]:
 
     symbols = {"T": "Treasure", "C": "Chest", "E": "Enemy",
                "M": "Merchant", "!": "Trap", "?": "Mystery"}
-    placed = {"S"}
     for sym in symbols:
         while True:
             r, c = random.randint(0, size - 1), random.randint(0, size - 1)
@@ -2270,8 +2275,6 @@ def end_session(state: dict, p: dict, comps: List[dict], all_chars: dict):
 
 def recruit_companion(player: dict, taken_names: list) -> Optional[dict]:
     header("RECRUIT A COMPANION", C.BLUE)
-    p_side = "heralded" if player.get("notoriety_score", 0) > 50 else \
-             "infamous" if player.get("notoriety_score", 0) < -50 else "neutral"
     for k, a in ARCHETYPES.items():
         side = "heralded" if a["bias"] > 50 else "infamous" if a["bias"] < -50 else "neutral"
         label = cc(C.GREEN, "Heralded") if side == "heralded" else \
@@ -2676,10 +2679,10 @@ if __name__ == "__main__":
         CFG.port = args.port
 
     if args.server:
-        print(f"  Server mode coming in next update. Use solo play for now.")
+        print("  Server mode coming in next update. Use solo play for now.")
         # TODO: Async server with queue + auth (Grok's assignment)
     elif args.client:
-        print(f"  Client mode coming in next update. Use solo play for now.")
+        print("  Client mode coming in next update. Use solo play for now.")
     else:
         try:
             main()

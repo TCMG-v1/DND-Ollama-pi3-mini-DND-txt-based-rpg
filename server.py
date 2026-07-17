@@ -365,6 +365,10 @@ class DnDServer:
             await self.send_to(pid, "  Session hasn't started. Waiting for DM to /start.")
             return
 
+        action = action[:500].strip()
+        if not action:
+            return
+
         cname = pdata.get("char_name", pdata["display_name"])
         self.pending_actions[pid] = action
         count = len(self.pending_actions)
@@ -620,11 +624,16 @@ class DnDServer:
         save_characters(self.all_characters)
 
         try:
-            resp = ollama_client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role":"user","content":
-                    f"In 2 sentences summarize this D&D session. Events: {' | '.join(self.state.session_log[-6:])}"}],
-                max_tokens=100, temperature=0.7
+            loop = asyncio.get_running_loop()
+            log_snippet = " | ".join(self.state.session_log[-6:])
+            resp = await loop.run_in_executor(
+                None,
+                lambda: ollama_client.chat.completions.create(
+                    model=MODEL,
+                    messages=[{"role": "user", "content":
+                        f"In 2 sentences summarize this D&D session. Events: {log_snippet}"}],
+                    max_tokens=100, temperature=0.7
+                )
             )
             summary = resp.choices[0].message.content.strip()
         except Exception:
@@ -680,14 +689,15 @@ class DnDServer:
             role_resp = await self.prompt(pid, "  Join as [P]layer or [D]M? ")
             if role_resp.upper() == "D":
                 dm_pass = os.getenv("DM_PASSWORD", "")
-                if dm_pass:
+                if not dm_pass:
+                    await self.send_to(pid, "  DM access unavailable: DM password is not configured. Joining as player.")
+                    log.warning(f"Denied DM login for {pid}: DM_PASSWORD is not configured")
+                else:
                     entered = await self.prompt(pid, "  DM password: ")
                     if entered != dm_pass:
                         await self.send_to(pid, "  Wrong password — joining as player.")
                     else:
                         self.players[pid]["role"] = "dm"
-                else:
-                    self.players[pid]["role"] = "dm"
 
             if self.players[pid]["role"] == "dm":
                 await self.send_to(pid, f"\n  Welcome DM {display}. Type /help for commands.\n")
