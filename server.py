@@ -678,7 +678,7 @@ class DnDServer:
             self.players[pid]["display_name"] = display
 
             role_resp = await self.prompt(pid, "  Join as [P]layer or [D]M? ")
-            role = "player"
+            role = self.players[pid]["role"]
             if role_resp.upper() == "D":
                 dm_pass = os.getenv("DM_PASSWORD")
                 if not dm_pass:

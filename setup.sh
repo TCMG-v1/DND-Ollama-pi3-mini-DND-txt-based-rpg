@@ -108,6 +108,7 @@ if [ ! -f "$ENV_FILE" ]; then
     if [ -f "$PROJECT_DIR/.env.example" ]; then
         cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
         success ".env file created from .env.example at $ENV_FILE"
+        warn "Review $ENV_FILE before starting the server, especially DM_PASSWORD and DND_PASSWORD."
     else
         cat > "$ENV_FILE" << 'EOF'
 OPENAI_API_KEY=ollama
@@ -125,6 +126,7 @@ DND_PASSWORD=
 DND_SAVE_DIR=saves
 EOF
         success ".env file created at $ENV_FILE"
+        warn "Review $ENV_FILE before starting the server, especially DM_PASSWORD and DND_PASSWORD."
     fi
 else
     warn ".env already exists — not overwritten."
