@@ -681,6 +681,7 @@ class DnDServer:
             if role_resp.upper() == "D":
                 dm_pass = os.getenv("DM_PASSWORD", "")
                 if not dm_pass:
+                    self.players[pid]["role"] = "player"
                     await self.send_to(pid, "  DM access unavailable: DM password is not configured. Joining as player.")
                     log.warning(f"Denied DM login for {pid}: DM_PASSWORD is not configured")
                 else:
