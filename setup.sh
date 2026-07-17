@@ -80,7 +80,20 @@ info "Setting up project at $PROJECT_DIR..."
 mkdir -p "$PROJECT_DIR"
 
 # Copy game files if running from same directory
-for f in README.md requirements.txt .env.example server.py solo_play.py client.py combat.py art.py dice.py combat_screen.py dnd_engine.py; do
+PROJECT_FILES=(
+    README.md
+    requirements.txt
+    .env.example
+    server.py
+    solo_play.py
+    client.py
+    combat.py
+    art.py
+    dice.py
+    combat_screen.py
+    dnd_engine.py
+)
+for f in "${PROJECT_FILES[@]}"; do
     if [ -f "$f" ]; then
         cp "$f" "$PROJECT_DIR/"
         success "Copied $f"
