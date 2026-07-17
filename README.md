@@ -127,13 +127,15 @@ Camp · Ruins · Storm · Portal · Mystery Door · Town Gates · City · Mounta
 
 | File | Purpose |
 |------|---------|
-| `solo_play.py` | Main game — character creation, story loop, all commands |
-| `combat.py` | FF3 combat engine — spells, moves, talent trees, notoriety perks |
-| `art.py` | Full ASCII art library — auto-detection, portraits, scenes, HUD |
-| `server.py` | Multiplayer TCP server — up to 8 players via SSH |
-| `client.py` | Player client for multiplayer |
-| `setup.sh` | One-shot Raspberry Pi 4 setup script |
-| `.env` | Model config, port, difficulty, token limits |
+| `solo_play.py` | Split-file solo campaign entry point |
+| `server.py` | Split-file multiplayer TCP server |
+| `client.py` | Split-file multiplayer client |
+| `dnd_engine.py` | Unified v5 engine — solo, server, and client modes in one file |
+| `combat.py` / `combat_screen.py` | Combat rules and terminal combat UI helpers |
+| `art.py` / `dice.py` | ASCII art, HUDs, banners, and dice/challenge helpers |
+| `setup.sh` | Raspberry Pi setup and file-copy bootstrap script |
+| `requirements.txt` | Python dependencies |
+| `.env.example` | Starter environment configuration you can copy to `.env` |
 
 ---
 
@@ -176,7 +178,7 @@ ollama pull mistral        # most machines
 ollama pull phi3-mini      # Pi4 or low memory
 
 # 3. Install Python deps
-pip install openai python-dotenv
+pip install -r requirements.txt
 
 # 4. Configure
 cp .env.example .env       # edit model name if needed
@@ -185,16 +187,29 @@ cp .env.example .env       # edit model name if needed
 python3 solo_play.py
 ```
 
+### Option C — Unified v5 engine
+```bash
+cp .env.example .env
+python3 dnd_engine.py
+# or:
+python3 dnd_engine.py --server
+python3 dnd_engine.py --client localhost
+```
+
 ### .env reference
 ```env
 OPENAI_API_KEY=ollama
 OPENAI_API_BASE=http://localhost:11434/v1
-OPENAI_MODEL=mistral
+OPENAI_MODEL=phi3-mini
 
 DND_PORT=4000
-MAX_PLAYERS=8
+MAX_PLAYERS=3
 TURN_WAIT_SECONDS=60
-MAX_TOKENS=800
+MAX_TOKENS=400
+TEMPERATURE=0.85
+DM_PASSWORD=
+DND_PASSWORD=
+DND_SAVE_DIR=saves
 ```
 
 ---

@@ -32,8 +32,13 @@ PY_VERSION=$($PYTHON --version 2>&1 | awk '{print $2}')
 info "Found Python $PY_VERSION"
 
 info "Installing Python dependencies..."
-pip3 install --break-system-packages openai python-dotenv 2>/dev/null || \
-    pip3 install openai python-dotenv
+if [ -f "requirements.txt" ]; then
+    pip3 install --break-system-packages -r requirements.txt 2>/dev/null || \
+        pip3 install -r requirements.txt
+else
+    pip3 install --break-system-packages openai python-dotenv 2>/dev/null || \
+        pip3 install openai python-dotenv
+fi
 success "Python packages installed."
 
 # ── 3. Ollama ────────────────────────────────────────────────
@@ -75,7 +80,7 @@ info "Setting up project at $PROJECT_DIR..."
 mkdir -p "$PROJECT_DIR"
 
 # Copy game files if running from same directory
-for f in server.py solo_play.py client.py; do
+for f in README.md requirements.txt .env.example server.py solo_play.py client.py combat.py art.py dice.py combat_screen.py dnd_engine.py; do
     if [ -f "$f" ]; then
         cp "$f" "$PROJECT_DIR/"
         success "Copied $f"
@@ -87,26 +92,27 @@ done
 # ── 6. Create .env file ──────────────────────────────────────
 ENV_FILE="$PROJECT_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
-    cat > "$ENV_FILE" << 'EOF'
-# ── AI Model Settings ─────────────────────────────────────────
-# Ollama running locally on Pi4 (default)
+    if [ -f "$PROJECT_DIR/.env.example" ]; then
+        cp "$PROJECT_DIR/.env.example" "$ENV_FILE"
+        success ".env file created from .env.example at $ENV_FILE"
+    else
+        cat > "$ENV_FILE" << 'EOF'
 OPENAI_API_KEY=ollama
 OPENAI_API_BASE=http://localhost:11434/v1
 OPENAI_MODEL=phi3-mini
 
-# To use a more powerful machine (e.g. Threadripper) instead:
-# OPENAI_API_BASE=http://192.168.1.X:11434/v1
-
-# ── Server Settings ───────────────────────────────────────────
 DND_PORT=4000
 MAX_PLAYERS=3
 TURN_WAIT_SECONDS=60
-
-# ── Performance (Pi4 optimized) ───────────────────────────────
-# Raise MAX_TOKENS on more powerful hardware
 MAX_TOKENS=400
+TEMPERATURE=0.85
+
+DM_PASSWORD=
+DND_PASSWORD=
+DND_SAVE_DIR=saves
 EOF
-    success ".env file created at $ENV_FILE"
+        success ".env file created at $ENV_FILE"
+    fi
 else
     warn ".env already exists — not overwritten."
 fi
