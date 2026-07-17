@@ -943,6 +943,7 @@ def equip_item(p:dict, item_name:str):
     if not found:
         cprint(C.RED, f"  '{item_name}' not in inventory.")
         return
+    match = found
     eq=p.setdefault("equipped",{"weapon":"","armor":"","offhand":"","accessory":""})
     if match in WEAPONS:
         old=eq.get("weapon",""); eq["weapon"]=match
